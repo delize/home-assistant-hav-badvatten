@@ -117,7 +117,7 @@ Water Quality**. The config flow is search-based:
 
 Repeat for each additional bathing site.
 
-Each entry's options let you change the update interval (default 180 minutes,
+Each entry's options let you change the update interval (default 240 minutes,
 range 30 to 1440) and the weather provider (SMHI SNOW or Open-Meteo). Changing an
 option reloads that bath.
 
@@ -166,14 +166,16 @@ Each bathing site is one device with these entities.
   nearest sites" path ranks against the Gulf of Guinea rather than Sweden. Search
   by name or municipality works regardless.
 - **Not real-time.** HaV publishes data a few times per day, so the default
-  3-hour poll is conservative.
+  4-hour poll is conservative.
 - **Outage handling.** HaV's API does return the occasional `500`. A failed poll
   does not wipe the device: the integration keeps serving the last-known values
-  (including a live "Unsafe" advisory) through up to three consecutive failures.
-  Only on the fourth does it give up and mark the entities unavailable, on the
-  basis that the backend is then persistently broken rather than hiccuping. The
-  *Last fetch status* and *Last fetch time* diagnostics show what's happening and
-  stay available throughout.
+  (including a live "Unsafe" advisory) through up to seven consecutive no-data
+  responses, and only on the eighth does it give up and mark the entities
+  unavailable, on the basis that the backend is then persistently broken rather
+  than hiccuping. Only HTTP error responses (the 4xx/5xx "no data" family) count
+  toward that; a timeout or connection blip keeps serving cached data without
+  advancing the counter. The *Last fetch status* and *Last fetch time*
+  diagnostics show what's happening and stay available throughout.
 
 ## Dashboard card
 

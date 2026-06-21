@@ -57,6 +57,18 @@ def classify_error(err: Exception) -> str:
     return "error"
 
 
+def _is_backend_data_error(err: Exception) -> bool:
+    """True for an HTTP response that carried no data (status >= 400).
+
+    Only these advance the give-up counter: the backend actively returned
+    nothing usable (the 400/500 family). Timeouts and connection failures keep
+    serving cached data but do not count, since they're as likely a transient or
+    client-side network blip as a persistently broken backend.
+    """
+    status = getattr(err, "status", None)
+    return isinstance(status, int) and status >= 400
+
+
 class FetchHealth:
     """Outcome tracker that lets the coordinator ride out transient HaV failures.
 
@@ -93,11 +105,15 @@ class FetchHealth:
         """Register a failed fetch.
 
         Returns the cached payload to serve, or ``None`` when the data should be
-        cleared (threshold reached, or nothing has ever succeeded).
+        cleared (threshold reached, or nothing has ever succeeded). Only HTTP
+        no-data responses (4xx/5xx) advance the give-up counter; a timeout or
+        connection blip still serves cached but leaves the counter untouched
+        (and a success is what resets it).
         """
-        self.consecutive_failures += 1
         self.status = classify_error(err)
         self.detail = str(err) or self.status
+        if _is_backend_data_error(err):
+            self.consecutive_failures += 1
         if (
             self.consecutive_failures < self.clear_threshold
             and self._last_good is not None

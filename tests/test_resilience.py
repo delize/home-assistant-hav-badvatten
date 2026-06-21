@@ -11,6 +11,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from hav_badvatten import FetchHealth, classify_error
+from hav_badvatten.const import FAILURE_CLEAR_THRESHOLD
 
 NOW = datetime(2026, 6, 21, 18, 0, tzinfo=UTC)
 
@@ -61,6 +62,36 @@ def test_serves_cached_until_threshold_then_clears():
     assert health.serving_cached is False
     assert health.consecutive_failures == 4
     assert health.status == "http_404"
+
+
+def test_default_threshold_is_eight():
+    assert FAILURE_CLEAR_THRESHOLD == 8
+    assert FetchHealth().clear_threshold == 8
+
+
+def test_timeouts_and_connection_errors_do_not_advance_the_counter():
+    health = FetchHealth(clear_threshold=8)
+    good = {"v": 1}
+    health.record_attempt(NOW)
+    health.record_success(good)
+
+    # Network blips serve cached but never count toward giving up, however many.
+    for _ in range(20):
+        health.record_attempt(NOW)
+        assert health.record_failure(TimeoutError()) is good
+        assert health.serving_cached is True
+        assert health.consecutive_failures == 0
+        assert health.status == "timeout"
+
+    health.record_attempt(NOW)
+    assert health.record_failure(_err(name="ClientConnectorError")) is good
+    assert health.consecutive_failures == 0
+    assert health.status == "unreachable"
+
+    # A real no-data response (HTTP 5xx) does advance it.
+    health.record_attempt(NOW)
+    assert health.record_failure(_err(status=503)) is good
+    assert health.consecutive_failures == 1
 
 
 def test_recovery_resets_the_streak():

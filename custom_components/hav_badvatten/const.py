@@ -2,15 +2,19 @@ from __future__ import annotations
 
 DOMAIN = "hav_badvatten"
 
-# HaV updates badvatten data a few times per day at most, so poll gently.
-DEFAULT_SCAN_MINUTES = 180
+# HaV updates badvatten data a few times per day at most, so poll gently. Every
+# 4 hours by default; adjustable 30–1440 minutes per entry in the options flow.
+DEFAULT_SCAN_MINUTES = 240
 CONF_SCAN_INTERVAL_MINUTES = "scan_interval_minutes"
 
-# Resilience: keep serving the last good payload through transient HaV failures
-# (a single 500/timeout is common), but once this many *consecutive* polls fail
-# we give up and mark the entities unavailable — at that point the backend is
-# persistently broken, not just hiccuping, and stale data would mislead.
-FAILURE_CLEAR_THRESHOLD = 4
+# Resilience: keep serving the last good payload through HaV failures, and only
+# give up (mark entities unavailable) after this many *consecutive* polls return
+# no data — i.e. the backend is persistently broken, not just hiccuping. Only
+# HTTP error responses (the 4xx/5xx "no data" family) advance the counter;
+# timeouts and connection blips keep serving cached without counting, since
+# they're as likely transient/network as a broken backend. At the default 4-hour
+# interval, 8 failures is ~32 h of cached data before clearing.
+FAILURE_CLEAR_THRESHOLD = 8
 
 CONF_BATH_ID = "bath_id"
 # Free-text field in the config flow: accepts a raw bathingWaterId or a URL.
