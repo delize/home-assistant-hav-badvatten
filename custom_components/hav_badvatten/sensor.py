@@ -286,6 +286,30 @@ def _sample_history(data: dict, value_key: str, extra: dict[str, str]) -> list[d
     return out
 
 
+# --- Design note: primary "Sensors" vs "Diagnostic" -------------------------
+# Every entity here is a real sensor; `entity_category=EntityCategory.DIAGNOSTIC`
+# is ONLY a Home Assistant grouping flag — it files the entity under the device
+# page's "Diagnostic" card and keeps it out of auto-generated dashboards. The
+# data, history and automation behaviour are identical either way.
+#
+# We deliberately mark the periodic lab-sample detail (sample_assessment,
+# e_coli, intestinal_enterococci, last_sample), the static profile flag
+# (bloom_risk, in binary_sensor.py) and the review hint (advisory_possibly_
+# outdated, in binary_sensor.py) as DIAGNOSTIC so the PRIMARY group answers
+# "can I swim right now?" — bathing_status, advice_against_bathing,
+# advisory_since and the current conditions — while the raw/periodic/static
+# evidence sits one layer down. This is what stops the ~2-week-old "Suitable"
+# sample verdict from sitting next to the live advisory and reading as a
+# contradiction (the original "this looks conflicting" complaint).
+#
+# Why we might revert this later: the primary/diagnostic line is a judgement
+# call (e.g. `classification` stays primary while the per-sample
+# `sample_assessment` is demoted — debatable, since both are "water quality"),
+# and some users may simply prefer a single flat sensor list. If feedback shows
+# people want the lab data / sample verdict visible by default, flatten it by
+# removing the `entity_category=EntityCategory.DIAGNOSTIC` lines (here and in
+# binary_sensor.py). It's a pure-UX change — no data or logic is affected.
+# ----------------------------------------------------------------------------
 SENSORS: tuple[BadvattenSensorDescription, ...] = (
     # Headline indicator: the single "can I swim?" answer.
     BadvattenSensorDescription(

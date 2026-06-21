@@ -124,6 +124,8 @@ BINARY_SENSORS: tuple[BadvattenBinaryDescription, ...] = (
     # NOT a live bloom alert. Deliberately no `safety` device class — it must not
     # read as a live "Safe/Unsafe" verdict competing with advice_against_bathing;
     # it's a diagnostic on/off flag. The live signal is advice_against_bathing.
+    # (See the "primary vs Diagnostic" design note in sensor.py for the rationale
+    #  behind the DIAGNOSTIC entities here and why we might flatten it later.)
     BadvattenBinaryDescription(
         key="bloom_risk",
         entity_category=EntityCategory.DIAGNOSTIC,
