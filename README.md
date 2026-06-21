@@ -173,9 +173,10 @@ Three example cards are in [`lovelace/`](lovelace):
 - [`badvatten-dashboard.yaml`](lovelace/badvatten-dashboard.yaml) is a full
   multi-section layout: a colour-coded status header, a red banner that appears
   only while an advisory is active, a glance row of conditions, a water-quality
-  and samples section, and (on coastal baths) the Baltic bloom map. Uses
-  `custom:template-entity-row` and `card-mod` (both HACS); replace the entity
-  prefix with your bath's slug.
+  and samples section, and (on coastal baths) the Baltic bloom map. It uses only
+  built-in cards, so it needs nothing from HACS (`card-mod`, if you have it, just
+  adds the red banner background). Replace the entity prefix with your bath's
+  slug.
 - [`badvatten-card-auto.yaml`](lovelace/badvatten-card-auto.yaml) needs no
   configuration. It uses `custom:auto-entities` (HACS) to pull in every entity
   for a bath by its device name, so there are no entity-id slugs to copy. Use
