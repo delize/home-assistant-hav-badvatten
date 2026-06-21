@@ -91,9 +91,9 @@ def _install_stubs() -> None:
     ce = _mod("homeassistant.config_entries")
     ce.ConfigEntry = type("ConfigEntry", (), {})
 
-    di = _mod("homeassistant.helpers.device_info")
-    helpers.device_info = di
-    di.DeviceInfo = lambda **kw: kw
+    he = _mod("homeassistant.helpers.entity")
+    helpers.entity = he
+    he.DeviceInfo = lambda **kw: kw
 
     uc = _mod("homeassistant.helpers.update_coordinator")
     helpers.update_coordinator = uc

@@ -54,3 +54,23 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install -r tests/requirements_test.txt
       - run: python -m pytest tests/ -q
+
+  import-check:
+    name: Import against Home Assistant
+    runs-on: ubuntu-latest
+    # The smoke tests stub homeassistant, so they can't catch a wrong HA import
+    # path. This installs real Home Assistant and imports every module.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install homeassistant
+      - run: |
+          PYTHONPATH="$PWD" python - <<'PY'
+          import importlib
+          for m in ["const", "api", "entity", "__init__",
+                    "config_flow", "sensor", "binary_sensor"]:
+              importlib.import_module(f"custom_components.hav_badvatten.{m}")
+              print("imported", m)
+          PY
