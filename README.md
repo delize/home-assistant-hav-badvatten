@@ -131,13 +131,13 @@ Each bathing site is one device with these entities:
 | --- | --- | --- |
 | **Bathing status** | sensor | **Headline "can I swim?"** — combines the live advisory with the latest sample into one verdict (*OK to bathe* / *Caution* / *Not suitable* / *Advisory*). Attrs carry the reasoning (advisory type/date vs last-sample date/result). |
 | Advisory since | sensor | Timestamp the active advisory began (so you can see it's newer than the sample). *Unknown* when there's none — the `active` attribute and *Advice against bathing* make that explicit. |
-| Water quality classification | sensor | EU classification (e.g. *Excellent*); attrs include 4-year history + EU-bathing flag. |
+| Water quality classification | sensor | EU classification (e.g. *Excellent*); attrs include 4-year history, EU-bathing flag, profile summary, and municipality/responsible-authority contact. |
 | Water temperature (measured) | sensor | °C, from the latest physical sample. |
 | Water temperature (forecast) | sensor | °C, Copernicus forecast (Open-Meteo fallback inland). |
 | Air temperature | sensor | °C at the bath from SMHI SNOW (or Open-Meteo); `apparent_temperature`/`provider` attributes. |
 | Wind speed | sensor | m/s at the bath from SMHI SNOW (or Open-Meteo); `direction`/`gusts`/`provider` attributes. |
 | Bathing season | sensor | `open` / `closed`; attrs are season start/end. |
-| Latest sample assessment | sensor (diagnostic) | Bacteria verdict of the most recent lab sample (*Suitable* …) — a periodic test, so it's grouped under **Diagnostic**, not the live verdict. |
+| Latest sample assessment | sensor (diagnostic) | Bacteria verdict of the most recent lab sample (*Suitable* …) — a periodic test, grouped under **Diagnostic**. Attrs include the per-sample **algae observation** (HaV's "Algae occurrence" column), E. coli/enterococci/temp, and dated history. |
 | E. coli | sensor (diagnostic) | Count per 100 mL from the latest sample; `prefix`/history attributes. |
 | Intestinal enterococci | sensor (diagnostic) | Count per 100 mL from the latest sample; history attribute. |
 | Last sample | sensor (diagnostic) | Timestamp of the most recent lab sample. |

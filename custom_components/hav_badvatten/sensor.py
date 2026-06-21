@@ -283,6 +283,16 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
             "rating_text": _latest_classification(d).get("qualityClassIdText"),
             "eu_bathing_water": (d.get("bathingWater") or {}).get("euType"),
             "water_type": (d.get("bathingWater") or {}).get("waterTypeIdText"),
+            "summary": (d.get("profile") or {}).get("summary"),
+            "municipality_contact": (
+                (d.get("bathingWater") or {}).get("municipality") or {}
+            ).get("contactInfo"),
+            "supervisory_authority": (
+                ((d.get("profile") or {}).get("localAuthorities") or {}).get(
+                    "supervisory"
+                )
+                or {}
+            ).get("contactInfo"),
             "history": [
                 {
                     "year": c.get("year"),
@@ -316,6 +326,7 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
             ),
             "sampled_at": _latest_result(d).get("takenAt"),
             "weather": _latest_result(d).get("weatherIdText"),
+            "algae_observation": _latest_result(d).get("algalIdText"),
             "complete": _latest_result(d).get("sampleComplete"),
             "e_coli": _latest_result(d).get("escherichiaColiCount"),
             "intestinal_enterococci": _latest_result(d).get(
@@ -323,7 +334,11 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
             ),
             "water_temp": _to_float(_latest_result(d).get("waterTemp")),
             "history": [
-                {"date": r.get("takenAt"), "assessment": r.get("sampleAssessIdText")}
+                {
+                    "date": r.get("takenAt"),
+                    "assessment": r.get("sampleAssessIdText"),
+                    "algae": r.get("algalIdText"),
+                }
                 for r in _results_sorted(d)[:8]
             ],
         },

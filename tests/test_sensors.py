@@ -94,6 +94,20 @@ def test_lab_sensors_are_diagnostic():
     assert cats["advisory_since"] is None
 
 
+def test_sample_includes_algae_observation(inland):
+    # HaV's "Algae occurrence" column — was missing before.
+    attrs = _by_key(inland)["sample_assessment"].extra_state_attributes
+    assert attrs["algae_observation"]  # e.g. "Ingen uppgift" / "Ingen blomning"
+    assert "algae" in attrs["history"][0]
+
+
+def test_classification_includes_bath_info(inland):
+    attrs = _by_key(inland)["classification"].extra_state_attributes
+    assert attrs["summary"]  # profile summary text
+    assert attrs["municipality_contact"]  # {email, phone, url}
+    assert attrs["supervisory_authority"]  # responsible authority contact
+
+
 def test_bacteria_history_exposes_trend(inland):
     s = _by_key(inland)
     ecoli_hist = s["e_coli"].extra_state_attributes["history"]
