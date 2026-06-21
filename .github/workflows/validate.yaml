@@ -35,6 +35,11 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
+          # Brand assets only matter for the HACS *default* store, and they
+          # live in home-assistant/brands (a separate PR) — not in this repo.
+          # Remove this once the brand PR is merged. Custom-repo installs work
+          # without it. https://hacs.xyz/docs/publish/include#check-brands
+          ignore: brands
 
   tests:
     name: Smoke tests
