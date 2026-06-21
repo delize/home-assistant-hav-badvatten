@@ -24,7 +24,6 @@ from .const import (
     DEFAULT_WEATHER_PROVIDER,
     DOMAIN,
     PROVIDER_SMHI,
-    SAMPLE_ASSESS_SAFE_ID,
     SMHI_WEATHER_ATTRIBUTION,
     WATER_TYPE_SEA_ID,
     WEATHER_ATTRIBUTION,
@@ -144,14 +143,37 @@ class BadvattenSensorDescription(SensorEntityDescription):
     attribution: str | None = None
 
 
+# API numeric ids -> stable enum keys so Home Assistant can translate the state
+# into the user's language (the raw *IdText is Swedish). The EU bathing-water
+# classes are 1=Excellent..4=Poor, 0=Not classified; sample assessment is
+# 1=Tjänligt, 2=Tjänligt med anm., 3=Otjänligt. The Swedish text is kept as an
+# attribute. Unmapped ids fall through to None (state "unknown").
+CLASSIFICATION_BY_ID = {
+    0: "not_classified",
+    1: "excellent",
+    2: "good",
+    3: "sufficient",
+    4: "poor",
+}
+CLASSIFICATION_OPTIONS = list(CLASSIFICATION_BY_ID.values())
+
+SAMPLE_ASSESS_BY_ID = {1: "suitable", 2: "suitable_with_remarks", 3: "unsuitable"}
+SAMPLE_ASSESS_OPTIONS = list(SAMPLE_ASSESS_BY_ID.values())
+
+
 SENSORS: tuple[BadvattenSensorDescription, ...] = (
     BadvattenSensorDescription(
         key="classification",
+        device_class=SensorDeviceClass.ENUM,
+        options=CLASSIFICATION_OPTIONS,
         icon="mdi:water-check",
-        value_fn=lambda d: _latest_classification(d).get("qualityClassIdText"),
+        value_fn=lambda d: CLASSIFICATION_BY_ID.get(
+            _latest_classification(d).get("qualityClassId")
+        ),
         attr_fn=lambda d: {
             "year": _latest_classification(d).get("year"),
             "quality_class_id": _latest_classification(d).get("qualityClassId"),
+            "rating_text": _latest_classification(d).get("qualityClassIdText"),
             "history": [
                 {
                     "year": c.get("year"),
@@ -168,14 +190,19 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
     ),
     BadvattenSensorDescription(
         key="sample_assessment",
+        device_class=SensorDeviceClass.ENUM,
+        options=SAMPLE_ASSESS_OPTIONS,
         icon="mdi:swim",
-        value_fn=lambda d: _latest_result(d).get("sampleAssessIdText"),
+        value_fn=lambda d: SAMPLE_ASSESS_BY_ID.get(
+            _latest_result(d).get("sampleAssessId")
+        ),
         attr_fn=lambda d: {
             "assessment_id": _latest_result(d).get("sampleAssessId"),
+            "assessment_text": _latest_result(d).get("sampleAssessIdText"),
             "suitable": (
                 None
                 if _latest_result(d).get("sampleAssessId") is None
-                else _latest_result(d).get("sampleAssessId") == SAMPLE_ASSESS_SAFE_ID
+                else _latest_result(d).get("sampleAssessId") in (1, 2)
             ),
             "sampled_at": _latest_result(d).get("takenAt"),
             "weather": _latest_result(d).get("weatherIdText"),

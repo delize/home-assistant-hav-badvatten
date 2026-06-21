@@ -37,8 +37,24 @@
   },
   "entity": {
     "sensor": {
-      "classification": { "name": "Badvattenklassificering" },
-      "sample_assessment": { "name": "Senaste provbedömning" },
+      "classification": {
+        "name": "Badvattenklassificering",
+        "state": {
+          "not_classified": "Ej klassificerad",
+          "excellent": "Utmärkt kvalitet",
+          "good": "Bra kvalitet",
+          "sufficient": "Tillfredsställande kvalitet",
+          "poor": "Dålig kvalitet"
+        }
+      },
+      "sample_assessment": {
+        "name": "Senaste provbedömning",
+        "state": {
+          "suitable": "Tjänligt",
+          "suitable_with_remarks": "Tjänligt med anmärkning",
+          "unsuitable": "Otjänligt"
+        }
+      },
       "water_temp_measured": { "name": "Vattentemperatur (uppmätt)" },
       "water_temp_forecast": { "name": "Vattentemperatur (prognos)" },
       "air_temperature": { "name": "Lufttemperatur" },

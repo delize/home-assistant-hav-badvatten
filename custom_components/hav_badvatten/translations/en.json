@@ -37,8 +37,24 @@
   },
   "entity": {
     "sensor": {
-      "classification": { "name": "Water quality classification" },
-      "sample_assessment": { "name": "Latest sample assessment" },
+      "classification": {
+        "name": "Water quality classification",
+        "state": {
+          "not_classified": "Not classified",
+          "excellent": "Excellent",
+          "good": "Good",
+          "sufficient": "Sufficient",
+          "poor": "Poor"
+        }
+      },
+      "sample_assessment": {
+        "name": "Latest sample assessment",
+        "state": {
+          "suitable": "Suitable for bathing",
+          "suitable_with_remarks": "Suitable (with remarks)",
+          "unsuitable": "Unsuitable for bathing"
+        }
+      },
       "water_temp_measured": { "name": "Water temperature (measured)" },
       "water_temp_forecast": { "name": "Water temperature (forecast)" },
       "air_temperature": { "name": "Air temperature" },

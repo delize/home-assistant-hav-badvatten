@@ -59,10 +59,11 @@ BINARY_SENSORS: tuple[BadvattenBinaryDescription, ...] = (
         },
     ),
     # STATIC profile flag: this site is prone to algal/cyanobacterial blooms.
-    # NOT a live bloom alert — diagnostic risk indicator only.
+    # NOT a live bloom alert. Deliberately no `safety` device class — it must not
+    # read as a live "Safe/Unsafe" verdict competing with advice_against_bathing;
+    # it's a diagnostic on/off flag. The live signal is advice_against_bathing.
     BadvattenBinaryDescription(
         key="bloom_risk",
-        device_class=BinarySensorDeviceClass.SAFETY,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: bool(
             ((d.get("profile") or {}).get("bloomRisk") or {}).get("algae")

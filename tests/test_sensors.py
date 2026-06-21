@@ -28,12 +28,16 @@ def test_sensor_set_is_complete():
 
 def test_inland_values(inland):
     s = _by_key(inland)
-    assert s["classification"].native_value == "Ej klassificerad"
-    assert s["classification"].extra_state_attributes["year"] == 2025
-    assert len(s["classification"].extra_state_attributes["history"]) == 4
+    classification = s["classification"]
+    assert classification.native_value == "not_classified"
+    assert classification.extra_state_attributes["year"] == 2025
+    assert classification.extra_state_attributes["rating_text"] == "Ej klassificerad"
+    assert len(classification.extra_state_attributes["history"]) == 4
 
-    assert s["sample_assessment"].native_value == "Tjänligt"
-    assert s["sample_assessment"].extra_state_attributes["suitable"] is True
+    assessment = s["sample_assessment"]
+    assert assessment.native_value == "suitable"
+    assert assessment.extra_state_attributes["suitable"] is True
+    assert assessment.extra_state_attributes["assessment_text"] == "Tjänligt"
 
     assert s["water_temp_measured"].native_value == 19.0
     # inland lakes have no Copernicus forecast
@@ -56,7 +60,7 @@ def test_coastal_forecast_picks_nearest_hour(coastal):
     s = _by_key(coastal)
     # forecast hours 10/13/16, fixed now=14:00 -> 13:00 -> 12.8 °C
     assert s["water_temp_forecast"].native_value == 12.8
-    assert s["classification"].native_value == "Utmärkt kvalitet"
+    assert s["classification"].native_value == "excellent"
 
 
 def test_weather_sensors_credit_open_meteo(inland):
