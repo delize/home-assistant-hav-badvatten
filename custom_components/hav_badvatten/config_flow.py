@@ -161,12 +161,12 @@ class BadvattenConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def async_get_options_flow(
         config_entry: config_entries.ConfigEntry,
     ) -> config_entries.OptionsFlow:
-        return BadvattenOptionsFlow(config_entry)
+        return BadvattenOptionsFlow()
 
 
 class BadvattenOptionsFlow(config_entries.OptionsFlow):
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry = config_entry
+    # Do NOT set self.config_entry — since HA 2024.11 it's a read-only property
+    # the framework provides after init (assigning it raises -> options flow 500).
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None

@@ -1,0 +1,3 @@
+# Real-Home-Assistant tests (config/options flow). The plugin pins a matching
+# Home Assistant version, so it doesn't need to be listed separately.
+pytest-homeassistant-custom-component

@@ -207,7 +207,9 @@ and SMHI APIs.
 | Ruff | `ruff check` + `ruff format --check` (config in [`pyproject.toml`](pyproject.toml)) |
 | Hassfest | Home Assistant's manifest/structure validation |
 | HACS | HACS repository validation |
-| Smoke tests | `pytest` on Python 3.12 and 3.13 |
+| Smoke tests | `pytest` on Python 3.12 and 3.13 (stubbed HA) |
+| Import against HA | installs real Home Assistant and imports every module |
+| Config/Options flow | runs the real flow under HA (`pytest-homeassistant-custom-component`) |
 
 Mirror it locally with [pre-commit](https://pre-commit.com):
 `pip install pre-commit && pre-commit install`.

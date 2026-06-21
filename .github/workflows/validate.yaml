@@ -74,3 +74,17 @@ jobs:
               importlib.import_module(f"custom_components.hav_badvatten.{m}")
               print("imported", m)
           PY
+
+  ha-tests:
+    name: Config/Options flow (real HA)
+    runs-on: ubuntu-latest
+    # The stub smoke tests can't reach the actual config/options flow, where
+    # framework changes have bitten us (e.g. OptionsFlow.config_entry). These
+    # run the real flow under Home Assistant via pytest-homeassistant-custom-component.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r tests_ha/requirements_test.txt
+      - run: python -m pytest tests_ha/ -o asyncio_mode=auto -q
