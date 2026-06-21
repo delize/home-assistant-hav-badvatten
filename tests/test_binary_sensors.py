@@ -38,27 +38,54 @@ def test_advisory_outdated_off_for_fresh_advisory(inland):
     assert b["advice_against_bathing"].is_on is True
 
 
-def test_advisory_outdated_on_for_old_advisory():
-    from conftest import FakeCoordinator
-
-    bath = {
+def _advisory_bath(season=True, sample_since=True, start="2026-05-01T00:00:00Z"):
+    # FAKE_NOW is 2026-06-21
+    current = {"startsAt": "2026-06-01T00:00:00Z", "endsAt": "2026-08-31T00:00:00Z"}
+    past = {"startsAt": "2025-06-01T00:00:00Z", "endsAt": "2025-08-31T00:00:00Z"}
+    return {
         "bathingWater": {},
-        "profile": {},
-        "results": [],
+        "profile": {"bathingSeason": current if season else past},
+        "results": (
+            [{"takenAt": "2026-06-10T00:00:00Z", "sampleAssessId": 1}]
+            if sample_since
+            else []
+        ),
         "adviceAgainstBathing": [
-            {
-                "typeIdText": "Algblomning",
-                "startsAt": "2026-05-01T00:00:00Z",  # ~51 days before FAKE_NOW
-                "description": "Misstänkt algblomning.",
-            }
+            {"typeIdText": "Algblomning", "startsAt": start, "description": "x"}
         ],
     }
-    b = _by_key(FakeCoordinator("x", bath))
+
+
+def test_advisory_outdated_on_in_season_with_samples():
+    from conftest import FakeCoordinator
+
+    b = _by_key(FakeCoordinator("x", _advisory_bath()))  # ~51d old, in season, sampled
     flag = b["advisory_possibly_outdated"]
     assert flag.is_on is True
-    assert flag.extra_state_attributes["advisory_age_days"] > 30
-    # crucially, the safety verdict still says avoid
+    assert flag.extra_state_attributes["advisory_age_days"] >= 16
+    # the safety verdict still says avoid
     assert b["advice_against_bathing"].is_on is True
+
+
+def test_advisory_outdated_respects_16_day_threshold():
+    from conftest import FakeCoordinator
+
+    # advisory only 10 days old (< 16) -> not flagged
+    b = _by_key(FakeCoordinator("x", _advisory_bath(start="2026-06-11T00:00:00Z")))
+    assert b["advisory_possibly_outdated"].is_on is False
+
+
+def test_advisory_outdated_off_out_of_season_or_no_samples():
+    from conftest import FakeCoordinator
+
+    off_season = _by_key(FakeCoordinator("x", _advisory_bath(season=False)))
+    assert off_season["advisory_possibly_outdated"].is_on is False
+
+    no_samples = _by_key(FakeCoordinator("x", _advisory_bath(sample_since=False)))
+    assert no_samples["advisory_possibly_outdated"].is_on is False
+
+
+def test_advisory_outdated_is_diagnostic():
     desc = {d.key: d for d in B.BINARY_SENSORS}["advisory_possibly_outdated"]
     assert desc.entity_category == "diagnostic"
 

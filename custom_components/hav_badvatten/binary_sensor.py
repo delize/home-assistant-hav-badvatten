@@ -18,10 +18,11 @@ from homeassistant.util import dt as dt_util
 from .const import DOMAIN
 from .entity import BadvattenEntity
 
-# How long an advisory can sit unchanged before it's worth a human re-check.
-# Recurring summer blooms sometimes get a "set-and-forget" advisory that's never
-# lifted, so flag it (diagnostic) — without ever clearing the safety signal.
-ADVISORY_REVIEW_DAYS = 30
+# In-season, an advisory unchanged for longer than ~one sampling cycle (≈ 2
+# weeks) while the bath keeps being sampled is worth a human re-check — e.g. a
+# recurring summer-bloom advisory that's never lifted. Diagnostic only; never
+# clears the safety signal.
+ADVISORY_REVIEW_DAYS = 16
 
 
 def _advisories(data: dict) -> list[dict]:
@@ -58,6 +59,27 @@ def _samples_since_advisory(data: dict) -> int:
         if taken is not None and taken > started:
             count += 1
     return count
+
+
+def _in_season(data: dict) -> bool:
+    season = (data.get("profile") or {}).get("bathingSeason") or {}
+    start = _parse_dt(season.get("startsAt"))
+    end = _parse_dt(season.get("endsAt"))
+    if start is None or end is None:
+        return False
+    return start <= dt_util.utcnow() <= end
+
+
+def _advisory_possibly_outdated(data: dict) -> bool:
+    """Active advisory that has gone unchanged a while, in season, while the
+    bath is still being sampled — i.e. worth a human re-check."""
+    age = _advisory_age_days(data)
+    return (
+        age is not None
+        and age >= ADVISORY_REVIEW_DAYS
+        and _in_season(data)
+        and _samples_since_advisory(data) > 0
+    )
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -120,7 +142,7 @@ BINARY_SENSORS: tuple[BadvattenBinaryDescription, ...] = (
     BadvattenBinaryDescription(
         key="advisory_possibly_outdated",
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda d: (_advisory_age_days(d) or 0) > ADVISORY_REVIEW_DAYS,
+        value_fn=_advisory_possibly_outdated,
         attr_fn=lambda d: {
             "advisory_age_days": _advisory_age_days(d),
             "advisory_since": (
@@ -129,6 +151,8 @@ BINARY_SENSORS: tuple[BadvattenBinaryDescription, ...] = (
                 else None
             ),
             "samples_since_advisory": _samples_since_advisory(d),
+            "in_season": _in_season(d),
+            "review_after_days": ADVISORY_REVIEW_DAYS,
             "note": "Diagnostic only — Advice against bathing is unaffected.",
         },
     ),
