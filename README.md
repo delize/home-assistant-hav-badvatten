@@ -129,7 +129,7 @@ Each bathing site is one device with these entities:
 
 | Entity | Type | Notes |
 | --- | --- | --- |
-| **Bathing status** | sensor | **Headline "can I swim?"** — combines the live advisory with the latest sample into one verdict (*OK to bathe* / *Caution* / *Not suitable* / *Advisory* / *No recent sample*). A live advisory overrides the sample; a sample older than 45 days reads as *No recent sample* (not a confident "OK"). Attrs carry the reasoning + `sample_age_days`. |
+| **Bathing status** | sensor | **Headline "can I swim?"** — combines the live advisory with the latest sample into one verdict (*OK to bathe* / *Caution* / *Not suitable* / *Advisory* / *No recent sample*). A live advisory overrides the sample; a sample that's stale — older than ~2× the bath's *own* sampling interval, or from a previous season — reads as *No recent sample* (not a confident "OK"). Attrs carry the reasoning + `sample_age_days`/`sample_interval_days`. |
 | Advisory since | sensor | Timestamp the active advisory began (so you can see it's newer than the sample). *Unknown* when there's none — the `active` attribute and *Advice against bathing* make that explicit. |
 | Water quality classification | sensor | EU classification (e.g. *Excellent*); attrs include 4-year history, EU-bathing flag, profile summary, and municipality/responsible-authority contact. |
 | Water temperature (measured) | sensor | °C, from the latest physical sample. |

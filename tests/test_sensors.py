@@ -77,6 +77,15 @@ def test_bathing_status_stale_sample_guard():
     assert attrs["sample_age_days"] > 45
 
 
+def test_bathing_status_cadence_is_adaptive(coastal):
+    # Threshold follows the bath's own sampling rhythm, not a fixed day count.
+    attrs = _by_key(coastal)["bathing_status"].extra_state_attributes
+    assert isinstance(attrs["sample_interval_days"], int)
+    assert attrs["sample_interval_days"] > 0
+    # coastal sample is recent (well within ~2 intervals) -> not stale
+    assert attrs["based_on"] == "latest_sample"
+
+
 def test_advisory_since_active(inland):
     from datetime import datetime
 

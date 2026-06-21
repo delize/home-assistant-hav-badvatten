@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, replace
-from datetime import datetime
+from datetime import datetime, timedelta
+from statistics import median
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -212,9 +213,18 @@ BATHING_STATUS_OPTIONS = [
     "no_recent_sample",
 ]
 
-# In-season sampling is roughly biweekly, so a sample older than this is from a
-# previous season (or a long gap) and must not read as a live "OK to bathe".
-MAX_SAMPLE_AGE_DAYS = 45
+# Staleness is adaptive, not a fixed number of days:
+#  1) cadence-relative — stale if the latest sample is behind by ~2 of the
+#     bath's *own* sampling intervals (≈ "one or two samples late"). This adapts
+#     to biweekly EU baths and less-frequently-sampled lakes alike.
+#  2) season-relative fallback — when a bath has too few samples to infer a
+#     rhythm, treat anything from before the current bathing season as stale
+#     (with a pre-season tolerance, since prep samples are taken just before open).
+#  3) last-resort absolute cap when neither is known.
+SAMPLE_STALE_INTERVALS = 2
+MIN_SAMPLE_INTERVAL_DAYS = 10  # floor so a noisy/dense cadence doesn't over-flag
+PRE_SEASON_TOLERANCE_DAYS = 30
+MAX_SAMPLE_AGE_DAYS = 60
 
 
 def _sample_age_days(data: dict) -> int | None:
@@ -222,9 +232,36 @@ def _sample_age_days(data: dict) -> int | None:
     return (dt_util.utcnow() - taken).days if taken else None
 
 
+def _sample_interval_days(data: dict) -> int | None:
+    """The bath's own sampling rhythm: median gap between recent samples.
+
+    The median ignores the big cross-season jump in the results list, leaving
+    the in-season cadence. Needs at least two samples.
+    """
+    dates = [_parse_dt(r.get("takenAt")) for r in _results_sorted(data)[:6]]
+    dates = [d for d in dates if d is not None]
+    gaps = [(dates[i] - dates[i + 1]).days for i in range(len(dates) - 1)]
+    gaps = [g for g in gaps if g > 0]
+    return int(median(gaps)) if gaps else None
+
+
 def _sample_is_stale(data: dict) -> bool:
-    age = _sample_age_days(data)
-    return age is not None and age > MAX_SAMPLE_AGE_DAYS
+    taken = _parse_dt(_latest_result(data).get("takenAt"))
+    if taken is None:
+        return False
+    age = (dt_util.utcnow() - taken).days
+
+    interval = _sample_interval_days(data)
+    if interval is not None:  # (1) cadence-relative
+        return age > SAMPLE_STALE_INTERVALS * max(interval, MIN_SAMPLE_INTERVAL_DAYS)
+
+    start = _parse_dt(
+        ((data.get("profile") or {}).get("bathingSeason") or {}).get("startsAt")
+    )
+    if start is not None:  # (2) season-relative
+        return taken < start - timedelta(days=PRE_SEASON_TOLERANCE_DAYS)
+
+    return age > MAX_SAMPLE_AGE_DAYS  # (3) last resort
 
 
 def _bathing_status(data: dict) -> str | None:
@@ -279,6 +316,7 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
             "last_sample_result": _latest_result(d).get("sampleAssessIdText"),
             "last_sample_at": _latest_result(d).get("takenAt"),
             "sample_age_days": _sample_age_days(d),
+            "sample_interval_days": _sample_interval_days(d),
         },
     ),
     # When the active advisory began. Unknown == no active advisory (the
