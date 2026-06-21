@@ -1,6 +1,6 @@
 {
   "domain": "hav_badvatten",
-  "name": "HaV Badvatten",
+  "name": "Swedish Bathing Water Quality",
   "codeowners": [
     "@delize"
   ],
@@ -10,5 +10,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/delize/home-assistant-hav-badvatten/issues",
   "requirements": [],
-  "version": "0.4.5"
+  "version": "0.4.6"
 }

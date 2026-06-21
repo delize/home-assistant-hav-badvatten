@@ -1,4 +1,7 @@
-# HaV Badvatten
+# Swedish Bathing Water Quality
+
+> Home Assistant integration name: **Swedish Bathing Water Quality** (English) /
+> **Badplatsen** (Swedish). Domain: `hav_badvatten`.
 
 [![Validate](https://github.com/delize/home-assistant-hav-badvatten/actions/workflows/validate.yaml/badge.svg)](https://github.com/delize/home-assistant-hav-badvatten/actions/workflows/validate.yaml)
 [![hacs](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
