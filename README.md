@@ -144,6 +144,7 @@ Each bathing site is one device with these entities:
 | Baltic cyanobacteria (past week) | sensor | **Coastal baths only.** SMHI satellite bloom compilation; diagnostic. State is the map date; attrs hold the EN/SV summary and `map_url`. |
 | Advice against bathing | binary_sensor | **Live** safety signal — on when an advisory (e.g. algal bloom, swimming ban) is active. |
 | Susceptible to algal blooms | binary_sensor | **Static** diagnostic flag — this site is historically *susceptible* to algal/cyanobacteria blooms (awareness, not a live alert). |
+| Advisory may be outdated | binary_sensor (diagnostic) | On when an advisory has been active **> 30 days** (e.g. a recurring-bloom advisory that's never lifted) — a "worth re-checking" hint. Attrs: `advisory_age_days`, `samples_since_advisory`. **Does not** clear the safety signal. |
 
 ## Caveats
 

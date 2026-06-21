@@ -85,7 +85,8 @@
     },
     "binary_sensor": {
       "advice_against_bathing": { "name": "Avrådan från bad" },
-      "bloom_risk": { "name": "Mottaglig för algblomning" }
+      "bloom_risk": { "name": "Mottaglig för algblomning" },
+      "advisory_possibly_outdated": { "name": "Avrådan kan vara inaktuell" }
     }
   }
 }

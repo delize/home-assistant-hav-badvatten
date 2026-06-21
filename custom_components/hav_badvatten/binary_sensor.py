@@ -13,9 +13,15 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
 from .entity import BadvattenEntity
+
+# How long an advisory can sit unchanged before it's worth a human re-check.
+# Recurring summer blooms sometimes get a "set-and-forget" advisory that's never
+# lifted, so flag it (diagnostic) — without ever clearing the safety signal.
+ADVISORY_REVIEW_DAYS = 30
 
 
 def _advisories(data: dict) -> list[dict]:
@@ -25,6 +31,33 @@ def _advisories(data: dict) -> list[dict]:
 def _latest_advisory(data: dict) -> dict:
     advisories = _advisories(data)
     return advisories[0] if advisories else {}
+
+
+def _parse_dt(value):
+    return dt_util.parse_datetime(str(value)) if value else None
+
+
+def _advisory_started(data: dict):
+    starts = [_parse_dt(a.get("startsAt")) for a in _advisories(data)]
+    starts = [s for s in starts if s is not None]
+    return min(starts) if starts else None
+
+
+def _advisory_age_days(data: dict) -> int | None:
+    started = _advisory_started(data)
+    return (dt_util.utcnow() - started).days if started is not None else None
+
+
+def _samples_since_advisory(data: dict) -> int:
+    started = _advisory_started(data)
+    if started is None:
+        return 0
+    count = 0
+    for result in data.get("results") or []:
+        taken = _parse_dt(result.get("takenAt"))
+        if taken is not None and taken > started:
+            count += 1
+    return count
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -79,6 +112,24 @@ BINARY_SENSORS: tuple[BadvattenBinaryDescription, ...] = (
         attr_fn=lambda d: {
             "algae": ((d.get("profile") or {}).get("bloomRisk") or {}).get("algae"),
             "cyano": ((d.get("profile") or {}).get("bloomRisk") or {}).get("cyano"),
+        },
+    ),
+    # DIAGNOSTIC: an active advisory left unchanged for a long time (e.g. a
+    # recurring-bloom advisory that's never lifted) is worth a human re-check.
+    # This does NOT clear the safety signal — advice_against_bathing stays on.
+    BadvattenBinaryDescription(
+        key="advisory_possibly_outdated",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda d: (_advisory_age_days(d) or 0) > ADVISORY_REVIEW_DAYS,
+        attr_fn=lambda d: {
+            "advisory_age_days": _advisory_age_days(d),
+            "advisory_since": (
+                _advisory_started(d).isoformat()
+                if _advisory_started(d) is not None
+                else None
+            ),
+            "samples_since_advisory": _samples_since_advisory(d),
+            "note": "Diagnostic only — Advice against bathing is unaffected.",
         },
     ),
 )

@@ -30,6 +30,39 @@ def test_bloom_risk_is_diagnostic():
     assert desc.entity_category == "diagnostic"
 
 
+def test_advisory_outdated_off_for_fresh_advisory(inland):
+    b = _by_key(inland)
+    # Sjöviken's advisory is ~6 days old (< 30) -> not flagged for review,
+    # but the safety signal is unaffected.
+    assert b["advisory_possibly_outdated"].is_on is False
+    assert b["advice_against_bathing"].is_on is True
+
+
+def test_advisory_outdated_on_for_old_advisory():
+    from conftest import FakeCoordinator
+
+    bath = {
+        "bathingWater": {},
+        "profile": {},
+        "results": [],
+        "adviceAgainstBathing": [
+            {
+                "typeIdText": "Algblomning",
+                "startsAt": "2026-05-01T00:00:00Z",  # ~51 days before FAKE_NOW
+                "description": "Misstänkt algblomning.",
+            }
+        ],
+    }
+    b = _by_key(FakeCoordinator("x", bath))
+    flag = b["advisory_possibly_outdated"]
+    assert flag.is_on is True
+    assert flag.extra_state_attributes["advisory_age_days"] > 30
+    # crucially, the safety verdict still says avoid
+    assert b["advice_against_bathing"].is_on is True
+    desc = {d.key: d for d in B.BINARY_SENSORS}["advisory_possibly_outdated"]
+    assert desc.entity_category == "diagnostic"
+
+
 def test_empty_payload_is_off(empty):
     for desc in B.BINARY_SENSORS:
         assert B.BadvattenBinarySensor(empty, "e", desc).is_on is False
