@@ -47,6 +47,7 @@ jobs:
           zip -r "$GITHUB_WORKSPACE/$ZIP_NAME" . -x '*__pycache__*' '*.pyc'
 
       - name: Upload zip to the release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ env.ZIP_NAME }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" "$ZIP_NAME" --clobber --repo "$GITHUB_REPOSITORY"
