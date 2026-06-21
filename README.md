@@ -139,6 +139,8 @@ Each bathing site is one device with these entities.
 | E. coli | sensor (diagnostic) | Count per 100 mL from the latest sample. `prefix` and history attributes. |
 | Intestinal enterococci | sensor (diagnostic) | Count per 100 mL from the latest sample. History attribute. |
 | Last sample | sensor (diagnostic) | Timestamp of the most recent lab sample. |
+| Last fetch status | sensor (diagnostic) | Result of the most recent poll: `ok`, or `http_500` / `http_404` / `timeout` / `unreachable` / `error`. Attributes: `serving_cached`, `consecutive_failures`, `clear_threshold`, `last_attempt`, `last_success`, `detail`. Stays available even when everything else is cleared, so you can see why. |
+| Last fetch time | sensor (diagnostic) | Timestamp of the last *successful* fetch, i.e. how fresh the displayed values are. |
 | Baltic cyanobacteria (past week) | sensor | Coastal baths only. SMHI satellite bloom compilation, diagnostic. The state is the map date; attributes hold the EN/SV summary and `map_url`. |
 | Advice against bathing | binary_sensor | The live safety signal. On when an advisory (such as an algal bloom or a swimming ban) is active. |
 | Susceptible to algal blooms | binary_sensor | A static diagnostic flag for whether this site is historically susceptible to algal or cyanobacteria blooms. It is awareness, not a live alert. |
@@ -165,6 +167,13 @@ Each bathing site is one device with these entities.
   by name or municipality works regardless.
 - **Not real-time.** HaV publishes data a few times per day, so the default
   3-hour poll is conservative.
+- **Outage handling.** HaV's API does return the occasional `500`. A failed poll
+  does not wipe the device: the integration keeps serving the last-known values
+  (including a live "Unsafe" advisory) through up to three consecutive failures.
+  Only on the fourth does it give up and mark the entities unavailable, on the
+  basis that the backend is then persistently broken rather than hiccuping. The
+  *Last fetch status* and *Last fetch time* diagnostics show what's happening and
+  stay available throughout.
 
 ## Dashboard card
 

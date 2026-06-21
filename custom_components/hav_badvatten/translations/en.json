@@ -74,6 +74,8 @@
       "e_coli": { "name": "E. coli" },
       "intestinal_enterococci": { "name": "Intestinal enterococci" },
       "last_sample": { "name": "Last sample" },
+      "last_fetch_status": { "name": "Last fetch status" },
+      "last_fetch_time": { "name": "Last fetch time" },
       "baltic_cyanobacteria": { "name": "Baltic cyanobacteria (past week)" },
       "bathing_season": {
         "name": "Bathing season",

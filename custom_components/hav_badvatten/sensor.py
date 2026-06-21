@@ -165,6 +165,15 @@ class BadvattenSensorDescription(SensorEntityDescription):
     attribution_fn: Callable[[dict], str | None] | None = None
 
 
+@dataclass(frozen=True, kw_only=True)
+class BadvattenHealthDescription(SensorEntityDescription):
+    """Diagnostic whose value comes from the coordinator's FetchHealth tracker,
+    not the bath payload — so it keeps reporting even when the data is cleared."""
+
+    value_fn: Callable[[Any], StateType | datetime]
+    attr_fn: Callable[[Any], dict[str, Any]] | None = None
+
+
 # API numeric ids -> stable enum keys so Home Assistant can translate the state
 # into the user's language (the raw *IdText is Swedish). The EU bathing-water
 # classes are 1=Excellent..4=Poor, 0=Not classified; sample assessment is
@@ -586,6 +595,42 @@ ALGAE_SENSOR = BadvattenSensorDescription(
 )
 
 
+def _iso(value: datetime | None) -> str | None:
+    return value.isoformat() if value else None
+
+
+# Fetch-health diagnostics. These read the coordinator's FetchHealth tracker
+# rather than the bath payload, so they keep reporting *why* the data is stale
+# or gone — including after the integration gives up and clears everything on a
+# persistent backend outage (FAILURE_CLEAR_THRESHOLD consecutive failures).
+# "last_fetch_status" is the result of the most recent poll (ok / http_500 /
+# http_404 / timeout / unreachable / error); "last_fetch_time" is when data was
+# last fetched successfully, i.e. how fresh the displayed values are.
+HEALTH_SENSORS: tuple[BadvattenHealthDescription, ...] = (
+    BadvattenHealthDescription(
+        key="last_fetch_status",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:cloud-sync-outline",
+        value_fn=lambda c: c.health.status,
+        attr_fn=lambda c: {
+            "serving_cached": c.health.serving_cached,
+            "consecutive_failures": c.health.consecutive_failures,
+            "clear_threshold": c.health.clear_threshold,
+            "last_attempt": _iso(c.health.last_attempt),
+            "last_success": _iso(c.health.last_success),
+            "detail": c.health.detail,
+        },
+    ),
+    BadvattenHealthDescription(
+        key="last_fetch_time",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:clock-check-outline",
+        value_fn=lambda c: c.health.last_success,
+    ),
+)
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -612,6 +657,10 @@ async def async_setup_entry(
     )
     if water_type == WATER_TYPE_SEA_ID:
         entities.append(BadvattenSensor(coordinator, entry.entry_id, ALGAE_SENSOR))
+    entities.extend(
+        BadvattenHealthSensor(coordinator, entry.entry_id, description)
+        for description in HEALTH_SENSORS
+    )
     async_add_entities(entities)
 
 
@@ -646,3 +695,38 @@ class BadvattenSensor(BadvattenEntity, SensorEntity):
         if self.entity_description.attr_fn is None:
             return None
         return self.entity_description.attr_fn(self._data)
+
+
+class BadvattenHealthSensor(BadvattenEntity, SensorEntity):
+    """Fetch-health diagnostic.
+
+    Reads the coordinator's FetchHealth tracker rather than coordinator.data, and
+    stays available even when the data has been cleared (FAILURE_CLEAR_THRESHOLD
+    consecutive failures) — that's exactly when you need to see *why* everything
+    else went unavailable.
+    """
+
+    entity_description: BadvattenHealthDescription
+
+    def __init__(
+        self,
+        coordinator,
+        entry_id: str,
+        description: BadvattenHealthDescription,
+    ) -> None:
+        super().__init__(coordinator, entry_id, description.key)
+        self.entity_description = description
+
+    @property
+    def available(self) -> bool:
+        return getattr(self.coordinator, "health", None) is not None
+
+    @property
+    def native_value(self) -> StateType | datetime:
+        return self.entity_description.value_fn(self.coordinator)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        if self.entity_description.attr_fn is None:
+            return None
+        return self.entity_description.attr_fn(self.coordinator)

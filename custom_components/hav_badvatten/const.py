@@ -6,6 +6,12 @@ DOMAIN = "hav_badvatten"
 DEFAULT_SCAN_MINUTES = 180
 CONF_SCAN_INTERVAL_MINUTES = "scan_interval_minutes"
 
+# Resilience: keep serving the last good payload through transient HaV failures
+# (a single 500/timeout is common), but once this many *consecutive* polls fail
+# we give up and mark the entities unavailable — at that point the backend is
+# persistently broken, not just hiccuping, and stale data would mislead.
+FAILURE_CLEAR_THRESHOLD = 4
+
 CONF_BATH_ID = "bath_id"
 # Free-text field in the config flow: accepts a raw bathingWaterId or a URL.
 CONF_INPUT = "bath"

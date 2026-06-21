@@ -74,6 +74,8 @@
       "e_coli": { "name": "E. coli" },
       "intestinal_enterococci": { "name": "Intestinala enterokocker" },
       "last_sample": { "name": "Senaste provtagning" },
+      "last_fetch_status": { "name": "Senaste hämtningsstatus" },
+      "last_fetch_time": { "name": "Senaste hämtningstid" },
       "baltic_cyanobacteria": { "name": "Cyanobakterier i Östersjön (senaste veckan)" },
       "bathing_season": {
         "name": "Badsäsong",
