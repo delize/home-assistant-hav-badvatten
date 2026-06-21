@@ -1,0 +1,63 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Hitta en badplats",
+        "description": "Sök på namn eller kommun (t.ex. \"Sjövik\" eller \"Stockholm\"). Lämna båda fälten tomma för att lista badplatserna närmast din Home Assistant-plats. Avancerat: klistra in ett bathingWaterId eller en doppkartan-länk för att hoppa över sökningen.",
+        "data": {
+          "query": "Sök (namn eller kommun)",
+          "bath": "Bad-id eller URL (valfritt)"
+        }
+      },
+      "select": {
+        "title": "Välj en badplats",
+        "data": {
+          "selection": "Badplats"
+        }
+      }
+    },
+    "error": {
+      "invalid_id": "Kunde inte hitta något bad-id i inmatningen.",
+      "no_matches": "Inga badplatser matchade. Prova en kortare eller annan sökning.",
+      "cannot_connect": "Kunde inte nå HaV:s badvatten-API."
+    },
+    "abort": {
+      "already_configured": "Den här badplatsen är redan tillagd."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval_minutes": "Uppdateringsintervall (minuter)",
+          "weather_provider": "Väderkälla (lufttemperatur & vind)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "classification": { "name": "Badvattenklassificering" },
+      "sample_assessment": { "name": "Senaste provbedömning" },
+      "water_temp_measured": { "name": "Vattentemperatur (uppmätt)" },
+      "water_temp_forecast": { "name": "Vattentemperatur (prognos)" },
+      "air_temperature": { "name": "Lufttemperatur" },
+      "wind_speed": { "name": "Vindhastighet" },
+      "e_coli": { "name": "E. coli" },
+      "intestinal_enterococci": { "name": "Intestinala enterokocker" },
+      "last_sample": { "name": "Senaste provtagning" },
+      "baltic_cyanobacteria": { "name": "Cyanobakterier i Östersjön (senaste veckan)" },
+      "bathing_season": {
+        "name": "Badsäsong",
+        "state": {
+          "open": "Öppen",
+          "closed": "Stängd"
+        }
+      }
+    },
+    "binary_sensor": {
+      "advice_against_bathing": { "name": "Avrådan från bad" },
+      "bloom_risk": { "name": "Risk för algblomning" }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+name: Release
+
+# CD for a HACS integration: when you publish a GitHub Release, stamp the tag
+# into manifest.json, zip the integration, and attach the zip as a release
+# asset. HACS installs that asset (see hacs.json: zip_release + filename), so
+# the published version always matches the tag — no manual manifest bump needed.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+env:
+  COMPONENT_DIR: custom_components/hav_badvatten
+  ZIP_NAME: hav_badvatten.zip
+
+jobs:
+  release:
+    name: Publish release zip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set manifest version to the release tag
+        run: |
+          python3 - <<'PY'
+          import json, os
+          tag = os.environ["TAG"]
+          version = tag[1:] if tag.startswith("v") else tag
+          path = os.path.join(os.environ["COMPONENT_DIR"], "manifest.json")
+          with open(path, encoding="utf-8") as fh:
+              manifest = json.load(fh)
+          manifest["version"] = version
+          with open(path, "w", encoding="utf-8") as fh:
+              json.dump(manifest, fh, indent=2, ensure_ascii=False)
+              fh.write("\n")
+          print(f"manifest version set to {version}")
+          PY
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+
+      - name: Create release zip
+        run: |
+          cd "$COMPONENT_DIR"
+          zip -r "$GITHUB_WORKSPACE/$ZIP_NAME" . -x '*__pycache__*' '*.pyc'
+
+      - name: Upload zip to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ZIP_NAME }}

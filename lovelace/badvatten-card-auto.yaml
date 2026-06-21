@@ -1,0 +1,24 @@
+# Zero-slug version of the badvatten card.
+#
+# Instead of hardcoding entity_ids, this uses custom:auto-entities (HACS) to
+# pull in every entity the integration created for one bath — you only supply
+# the human-readable device name, no slugs to copy.
+#
+# Requires the `auto-entities` HACS frontend card.
+type: custom:auto-entities
+card:
+  type: entities
+  title: Badvatten
+  show_header_toggle: false
+filter:
+  include:
+    # Only this bath's device. Change the name, or delete this `device:` line
+    # to show every bath you've added.
+    - integration: hav_badvatten
+      device: Sjövikskajens bryggbad
+  exclude: []
+sort:
+  method: friendly_name
+# To show the SMHI bloom map alongside (coastal baths only), pair this with a
+# markdown card pointing at the baltic_cyanobacteria sensor's `map_url` — see
+# the README "Baltic cyanobacteria" section.

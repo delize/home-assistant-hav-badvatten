@@ -1,0 +1,136 @@
+# Badvatten dashboard card for one bathing site.
+#
+# Requires two HACS frontend cards (same family as your waste-collection card):
+#   - custom:template-entity-row  (lovelace-template-entity-row)
+#   - card-mod
+#
+# Replace the entity prefix `sjovikskajens_bryggbad` everywhere below with your
+# bath's slug. With `has_entity_name`, entity_ids are
+# `sensor.<device-name-slug>_<entity-name-slug>`, e.g. a device named
+# "Sjövikskajens bryggbad" gives `sensor.sjovikskajens_bryggbad_water_temperature_measured`.
+# (Developer Tools → States is the quickest way to copy the exact ids.)
+type: entities
+title: Badvatten – Sjövikskajens bryggbad
+show_header_toggle: false
+card_mod:
+  style: |
+    #states > * {
+      margin-top: -10px !important;
+      margin-bottom: -10px !important;
+    }
+entities:
+  # --- Live advisory: the "should I swim today" safety signal ---------------
+  - type: custom:template-entity-row
+    entity: binary_sensor.sjovikskajens_bryggbad_advice_against_bathing
+    icon: mdi:alert-octagon
+    name: >
+      {% if is_state('binary_sensor.sjovikskajens_bryggbad_advice_against_bathing', 'on') %}
+        Avrådan från bad
+      {% else %}
+        Inga avrådanden
+      {% endif %}
+    state: >
+      {% set adv = state_attr('binary_sensor.sjovikskajens_bryggbad_advice_against_bathing', 'advisories') %}
+      {% if adv %}{{ adv[0].type }}{% else %}–{% endif %}
+    color: >
+      {% if is_state('binary_sensor.sjovikskajens_bryggbad_advice_against_bathing', 'on') %}
+        red
+      {% else %}
+        #4CAF50
+      {% endif %}
+
+  # --- Latest sample verdict ------------------------------------------------
+  - type: custom:template-entity-row
+    entity: sensor.sjovikskajens_bryggbad_latest_sample_assessment
+    icon: mdi:swim
+    name: Senaste provbedömning
+    color: >
+      {% set suitable = state_attr('sensor.sjovikskajens_bryggbad_latest_sample_assessment', 'suitable') %}
+      {% if suitable == true %} #4CAF50
+      {% elif suitable == false %} red
+      {% else %} grey {% endif %}
+
+  # --- Last sample, as a relative age --------------------------------------
+  - type: custom:template-entity-row
+    entity: sensor.sjovikskajens_bryggbad_last_sample
+    icon: mdi:flask-outline
+    name: >
+      {% set ts = states('sensor.sjovikskajens_bryggbad_last_sample') %}
+      {% if ts in ['unavailable', 'unknown', 'none'] %}
+        Senaste prov (saknas)
+      {% else %}
+        {% set dagar = ((now() - as_datetime(ts)).total_seconds() / 86400) | int %}
+        {% if dagar <= 0 %} Senaste prov (Idag)
+        {% elif dagar == 1 %} Senaste prov (Igår)
+        {% else %} Senaste prov (För {{ dagar }} dgr sedan) {% endif %}
+      {% endif %}
+    state: >
+      {% set ts = states('sensor.sjovikskajens_bryggbad_last_sample') %}
+      {% if ts in ['unavailable', 'unknown', 'none'] %} –
+      {% else %} {{ as_timestamp(ts) | timestamp_custom('%Y-%m-%d') }} {% endif %}
+    color: >
+      {% set ts = states('sensor.sjovikskajens_bryggbad_last_sample') %}
+      {% if ts in ['unavailable', 'unknown', 'none'] %} grey
+      {% else %}
+        {% set dagar = ((now() - as_datetime(ts)).total_seconds() / 86400) | int %}
+        {% if dagar <= 7 %} #4CAF50
+        {% elif dagar <= 21 %} orange
+        {% else %} red {% endif %}
+      {% endif %}
+
+  # --- Temperatures ---------------------------------------------------------
+  - entity: sensor.sjovikskajens_bryggbad_water_temperature_measured
+    name: Vattentemperatur (uppmätt)
+    icon: mdi:coolant-temperature
+  - entity: sensor.sjovikskajens_bryggbad_water_temperature_forecast
+    name: Vattentemperatur (prognos)
+    icon: mdi:waves
+  - entity: sensor.sjovikskajens_bryggbad_air_temperature
+    name: Lufttemperatur
+    icon: mdi:thermometer
+  - entity: sensor.sjovikskajens_bryggbad_wind_speed
+    name: Vindhastighet
+    icon: mdi:weather-windy
+
+  # --- Quality + season -----------------------------------------------------
+  - entity: sensor.sjovikskajens_bryggbad_water_quality_classification
+    name: Klassificering
+    icon: mdi:water-check
+  - entity: sensor.sjovikskajens_bryggbad_e_coli
+    name: E. coli
+  - entity: sensor.sjovikskajens_bryggbad_intestinal_enterococci
+    name: Intestinala enterokocker
+  - type: custom:template-entity-row
+    entity: sensor.sjovikskajens_bryggbad_bathing_season
+    icon: mdi:calendar-range
+    name: Badsäsong
+    color: >
+      {% if is_state('sensor.sjovikskajens_bryggbad_bathing_season', 'open') %} #4CAF50
+      {% else %} grey {% endif %}
+
+  # --- Sun (Home Assistant's built-in sun integration) ----------------------
+  # doppkartan uses suncalc for sun position; HA already exposes this via the
+  # `sun` integration (enabled by default). Elevation is a good shade/UV proxy.
+  - type: custom:template-entity-row
+    entity: sun.sun
+    icon: mdi:weather-sunny
+    name: Solhöjd
+    state: "{{ state_attr('sun.sun', 'elevation') }}°"
+
+  # --- Baltic cyanobacteria (COASTAL baths only — omit on inland lakes) -----
+  # This entity only exists for "Hav" baths. The map image is in the `map_url`
+  # attribute; render it with the markdown card shown in the README.
+  - type: custom:template-entity-row
+    entity: sensor.sjovikskajens_bryggbad_baltic_cyanobacteria
+    icon: mdi:satellite-variant
+    name: Cyanobakterier i Östersjön
+    state: >
+      {{ state_attr('sensor.sjovikskajens_bryggbad_baltic_cyanobacteria', 'summary_sv')
+         or states('sensor.sjovikskajens_bryggbad_baltic_cyanobacteria') }}
+
+  # --- Diagnostic: static bloom-proneness ----------------------------------
+  - entity: binary_sensor.sjovikskajens_bryggbad_algal_cyanobacteria_bloom_risk
+    name: Risk för algblomning (statisk)
+    icon: mdi:flower-pollen
+view_layout:
+  position: sidebar

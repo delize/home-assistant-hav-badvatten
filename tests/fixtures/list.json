@@ -1,0 +1,102 @@
+{
+  "watersAndAdvisories": [
+    {
+      "abnormalSituations": [],
+      "adviceAgainstBathing": [],
+      "bathingWater": {
+        "description": "Badplatsen Mossbylund ligger vid Skånes sydkust i Skurups kommun. Det är en relativt stor badplats med i snitt 200 badande per dag. Badplatsen består av en ca 500 meter lång sandstrand med gräsbevuxna sanddynor. Havsbottnen är närmast stranden stenig men övergår på någon meters djup till att bestå av sand.   ",
+        "euMotive": "Stort antal badande >200 personer per dag. ",
+        "euType": true,
+        "id": "SE0441264000000306",
+        "municipality": {
+          "contactInfo": {
+            "email": "kansli@skurup.se",
+            "phone": "0411-536000",
+            "url": "www.skurup.se"
+          },
+          "id": 1264,
+          "name": "Skurup"
+        },
+        "name": "Mossbylund",
+        "notEuMotive": "",
+        "perimeterCoordinates": [],
+        "samplingPointPosition": {
+          "latitude": "55.413288992130504",
+          "longitude": "13.625274381664624"
+        },
+        "waterTypeId": 1,
+        "waterTypeIdText": "Hav"
+      }
+    },
+    {
+      "abnormalSituations": [],
+      "adviceAgainstBathing": [
+        {
+          "description": "Misstänkt algblomning.",
+          "startsAt": "2026-06-15T13:28:51Z",
+          "typeId": 2,
+          "typeIdText": "Algblomning"
+        }
+      ],
+      "bathingWater": {
+        "description": "Under sommaren är badområdet markerat med bojar för att markera en gräns mot båttrafiken och uppmärksamma båtar på att det kan finnas badande personer i vattnet.\n\nDet finns livräddningsutrustning vid badet.\n\nDet är hundförbud på bryggorna 1 juni–31 augusti. Förbudet gäller inte för ledar- och assistanshundar.\n\nDet är dykförbud från bryggorna – i vattnet finns kättingar som kan vara svåra att se.",
+        "euMotive": "Sjövikskajens bryggbad öppnades upp för allmänheten föregående säsong och har ett högt och återkommande antal badande (mer än 200 badande) under sommarsäsongen samt är tillgängligt för bad i form av tre bryggor. För att säkerställa regelbunden provtagning, tydlig information till allmänheten och långsiktig kontroll av vattenkvaliteten bör platsen klassas som EU-bad.",
+        "euType": true,
+        "id": "SE0110180000007461",
+        "municipality": {
+          "contactInfo": {
+            "email": "miljoforvaltningen@stockholm.se",
+            "phone": "08-50828800",
+            "url": "start.stockholm"
+          },
+          "id": 180,
+          "name": "Stockholm"
+        },
+        "name": "Sjövikskajens bryggbad",
+        "notEuMotive": "false",
+        "perimeterCoordinates": [],
+        "samplingPointPosition": {
+          "latitude": "59.3073",
+          "longitude": "18.0334"
+        },
+        "waterTypeId": 3,
+        "waterTypeIdText": "Sjö"
+      }
+    },
+    {
+      "abnormalSituations": [],
+      "adviceAgainstBathing": [
+        {
+          "description": "Misstänkt algblomning.",
+          "startsAt": "2026-06-15T13:28:51Z",
+          "typeId": 2,
+          "typeIdText": "Algblomning"
+        }
+      ],
+      "bathingWater": {
+        "description": "Under sommaren är badområdet markerat med bojar för att markera en gräns mot båttrafiken och uppmärksamma båtar på att det kan finnas badande personer i vattnet.\n\nDet finns livräddningsutrustning vid badet.\n\nDet är hundförbud på bryggorna 1 juni–31 augusti. Förbudet gäller inte för ledar- och assistanshundar.\n\nDet är dykförbud från bryggorna – i vattnet finns kättingar som kan vara svåra att se.",
+        "euMotive": "Sjövikskajens bryggbad öppnades upp för allmänheten föregående säsong och har ett högt och återkommande antal badande (mer än 200 badande) under sommarsäsongen samt är tillgängligt för bad i form av tre bryggor. För att säkerställa regelbunden provtagning, tydlig information till allmänheten och långsiktig kontroll av vattenkvaliteten bör platsen klassas som EU-bad.",
+        "euType": true,
+        "id": "SE0110180000007461",
+        "municipality": {
+          "contactInfo": {
+            "email": "miljoforvaltningen@stockholm.se",
+            "phone": "08-50828800",
+            "url": "start.stockholm"
+          },
+          "id": 180,
+          "name": "Stockholm"
+        },
+        "name": "Sjövikskajens bryggbad",
+        "notEuMotive": "false",
+        "perimeterCoordinates": [],
+        "samplingPointPosition": {
+          "latitude": "59.3073",
+          "longitude": "18.0334"
+        },
+        "waterTypeId": 3,
+        "waterTypeIdText": "Sjö"
+      }
+    }
+  ]
+}

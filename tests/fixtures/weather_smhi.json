@@ -1,0 +1,43 @@
+{
+  "createdTime": "2026-06-21T09:00:20Z",
+  "referenceTime": "2026-06-21T08:45:00Z",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.623523,
+      55.42314
+    ]
+  },
+  "timeSeries": [
+    {
+      "time": "2026-06-21T09:00:00Z",
+      "intervalParametersStartTime": "2026-06-21T08:00:00Z",
+      "data": {
+        "air_temperature": 24.0,
+        "wind_from_direction": 315,
+        "wind_speed": 3.4,
+        "wind_speed_of_gust": 7.2,
+        "relative_humidity": 59,
+        "air_pressure_at_mean_sea_level": 1024.1,
+        "visibility_in_air": 27.8,
+        "thunderstorm_probability": 1,
+        "probability_of_frozen_precipitation": 0.0,
+        "cloud_area_fraction": 3,
+        "low_type_cloud_area_fraction": 0,
+        "medium_type_cloud_area_fraction": 0,
+        "high_type_cloud_area_fraction": 1,
+        "cloud_base_altitude": 9999,
+        "cloud_top_altitude": 9999,
+        "precipitation_amount_mean_deterministic": 0.0,
+        "precipitation_amount_mean": 0.0,
+        "precipitation_amount_min": 0.0,
+        "precipitation_amount_max": 0.0,
+        "precipitation_amount_median": 0.0,
+        "probability_of_precipitation": 0,
+        "precipitation_frozen_part": -9,
+        "predominant_precipitation_type_at_surface": 0,
+        "symbol_code": 2
+      }
+    }
+  ]
+}

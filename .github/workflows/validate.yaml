@@ -1,0 +1,51 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # Catch breakage from upstream HA / HACS changes once a week.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Ruff (lint + format)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+        with:
+          version: "0.15.18"
+      - run: ruff check .
+      - run: ruff format --check .
+
+  hassfest:
+    name: Hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    name: HACS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hacs/action@main
+        with:
+          category: integration
+
+  tests:
+    name: Smoke tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -r tests/requirements_test.txt
+      - run: python -m pytest tests/ -q

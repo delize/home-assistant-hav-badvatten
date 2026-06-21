@@ -1,0 +1,38 @@
+# Tooling config for the hav_badvatten integration. There is no package to
+# build here (Home Assistant loads custom_components/ directly), so this only
+# configures the linter, formatter and test runner used by CI and pre-commit.
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+src = ["custom_components", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "E",      # pycodestyle errors
+  "W",      # pycodestyle warnings
+  "F",      # pyflakes
+  "I",      # isort
+  "B",      # flake8-bugbear
+  "BLE",    # flake8-blind-except
+  "C4",     # flake8-comprehensions
+  "SIM",    # flake8-simplify
+  "UP",     # pyupgrade
+  "ASYNC",  # flake8-async
+  "RUF",    # ruff-specific
+]
+ignore = [
+  # This is a Swedish data source: Swedish text legitimately uses å/ä/ö and the
+  # en dash (–). Don't flag those as "ambiguous unicode".
+  "RUF001",
+  "RUF002",
+  "RUF003",
+]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["hav_badvatten"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

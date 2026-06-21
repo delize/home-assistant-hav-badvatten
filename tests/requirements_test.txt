@@ -1,0 +1,4 @@
+# Smoke tests stub out homeassistant/aiohttp, so only pytest is required.
+# For full Home-Assistant-level tests, add:
+#   pytest-homeassistant-custom-component
+pytest>=7.4

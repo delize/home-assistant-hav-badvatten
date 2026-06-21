@@ -1,0 +1,102 @@
+{
+  "key": "latest",
+  "updated": 1782032630214,
+  "title": "Senaste dag (2026-06-20)",
+  "summary": "Här hittar du algkartor/texter för senaste dag (2026-06-20)",
+  "link": [
+    {
+      "href": "https://opendata-download-algae.smhi.se/api/version/latest/year/latest/month/latest/day/latest.json",
+      "rel": "day",
+      "type": "application/json"
+    },
+    {
+      "href": "https://opendata-download-algae.smhi.se/api/version/latest/year/latest/month/latest/day/latest.xml",
+      "rel": "day",
+      "type": "application/xml"
+    },
+    {
+      "href": "https://opendata-download-algae.smhi.se/api/version/latest/year/latest/month/latest/day/latest.atom",
+      "rel": "day",
+      "type": "application/atom+xml"
+    },
+    {
+      "href": "https://opendata-download-algae.smhi.se/api/category/version/latest/year/latest/month/latest.atom",
+      "rel": "month",
+      "type": "application/atom+xml"
+    }
+  ],
+  "dataMap": [
+    {
+      "key": "info",
+      "updated": 1782032630214,
+      "title": "All information för 2026-06-20",
+      "summary": "Här hittar du alla texter för 2026-06-20",
+      "link": [
+        {
+          "href": "https://opendata-download-algae.smhi.se/api/version/latest/year/latest/month/latest/day/latest/data/info.json",
+          "rel": "data",
+          "type": "application/json"
+        },
+        {
+          "href": "https://opendata-download-algae.smhi.se/api/version/latest/year/latest/month/latest/day/latest/data/info.xml",
+          "rel": "data",
+          "type": "application/xml"
+        }
+      ]
+    },
+    {
+      "key": "Baltic_algae_COMP7",
+      "updated": 1782032630205,
+      "title": "Sammanställning över den senaste veckan/Compilation of the past week",
+      "summary": "Antalet dagar som cyanobakterieblomning observerats under de senaste 7 dagarna/The number of days that cyanobacteria blooms have been observed in the past 7 days.",
+      "link": [
+        {
+          "href": "https://opendata-download-algae.smhi.se/api/version/latest/year/latest/month/latest/day/latest/data/Baltic_algae_COMP7.txt",
+          "rel": "data",
+          "type": "image/png"
+        },
+        {
+          "href": "https://opendata-download-algae.smhi.se/api/version/latest/year/latest/month/latest/day/latest/data/Baltic_algae_COMP7_20260620.png",
+          "rel": "data",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "key": "Baltic_algae_COMP7_eng",
+      "updated": 1782032630206,
+      "title": "Past week cyanobacteria blooms in the Baltic Sea",
+      "summary": "Brief text summary of the past week's bloom situation.",
+      "link": [
+        {
+          "href": "https://opendata-download-algae.smhi.se/api/version/latest/year/latest/month/latest/day/latest/data/Baltic_algae_COMP7_eng.txt",
+          "rel": "data",
+          "type": "text/plain"
+        },
+        {
+          "href": "https://opendata-download-algae.smhi.se/api/version/latest/year/latest/month/latest/day/latest/data/Baltic_algae_COMP7_eng_20260620.txt",
+          "rel": "data",
+          "type": "text/plain"
+        }
+      ]
+    },
+    {
+      "key": "Baltic_algae_COMP7_swe",
+      "updated": 1782032630206,
+      "title": "Senaste veckans cyanobakterieblomningar i Östersjön",
+      "summary": "Kortfattad text om det senaste veckans blomningsläge.",
+      "link": [
+        {
+          "href": "https://opendata-download-algae.smhi.se/api/version/latest/year/latest/month/latest/day/latest/data/Baltic_algae_COMP7_swe.txt",
+          "rel": "data",
+          "type": "text/plain"
+        },
+        {
+          "href": "https://opendata-download-algae.smhi.se/api/version/latest/year/latest/month/latest/day/latest/data/Baltic_algae_COMP7_swe_20260620.txt",
+          "rel": "data",
+          "type": "text/plain"
+        }
+      ]
+    }
+  ]
+}

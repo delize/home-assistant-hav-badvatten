@@ -1,0 +1,63 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Find a bathing site",
+        "description": "Search by name or municipality (e.g. \"Sjövik\" or \"Stockholm\"). Leave both fields empty to list the sites nearest your Home Assistant location. Advanced: paste a bathingWaterId or doppkartan link to skip search.",
+        "data": {
+          "query": "Search (name or municipality)",
+          "bath": "Bath id or URL (optional)"
+        }
+      },
+      "select": {
+        "title": "Select a bathing site",
+        "data": {
+          "selection": "Bathing site"
+        }
+      }
+    },
+    "error": {
+      "invalid_id": "Could not find a bath id in that input.",
+      "no_matches": "No bathing sites matched. Try a shorter or different search.",
+      "cannot_connect": "Could not reach the HaV bathing-waters API."
+    },
+    "abort": {
+      "already_configured": "This bathing site is already added."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval_minutes": "Update interval (minutes)",
+          "weather_provider": "Weather provider (air temperature & wind)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "classification": { "name": "Water quality classification" },
+      "sample_assessment": { "name": "Latest sample assessment" },
+      "water_temp_measured": { "name": "Water temperature (measured)" },
+      "water_temp_forecast": { "name": "Water temperature (forecast)" },
+      "air_temperature": { "name": "Air temperature" },
+      "wind_speed": { "name": "Wind speed" },
+      "e_coli": { "name": "E. coli" },
+      "intestinal_enterococci": { "name": "Intestinal enterococci" },
+      "last_sample": { "name": "Last sample" },
+      "baltic_cyanobacteria": { "name": "Baltic cyanobacteria (past week)" },
+      "bathing_season": {
+        "name": "Bathing season",
+        "state": {
+          "open": "Open",
+          "closed": "Closed"
+        }
+      }
+    },
+    "binary_sensor": {
+      "advice_against_bathing": { "name": "Advice against bathing" },
+      "bloom_risk": { "name": "Algal/cyanobacteria bloom risk" }
+    }
+  }
+}

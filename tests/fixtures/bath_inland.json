@@ -1,0 +1,136 @@
+{
+  "abnormalSituations": [],
+  "adviceAgainstBathing": [
+    {
+      "description": "Misstänkt algblomning.",
+      "startsAt": "2026-06-15T13:28:51Z",
+      "typeId": 2,
+      "typeIdText": "Algblomning"
+    }
+  ],
+  "bathingWater": {
+    "description": "Under sommaren är badområdet markerat med bojar för att markera en gräns mot båttrafiken och uppmärksamma båtar på att det kan finnas badande personer i vattnet.\n\nDet finns livräddningsutrustning vid badet.\n\nDet är hundförbud på bryggorna 1 juni–31 augusti. Förbudet gäller inte för ledar- och assistanshundar.\n\nDet är dykförbud från bryggorna – i vattnet finns kättingar som kan vara svåra att se.",
+    "euMotive": "Sjövikskajens bryggbad öppnades upp för allmänheten föregående säsong och har ett högt och återkommande antal badande (mer än 200 badande) under sommarsäsongen samt är tillgängligt för bad i form av tre bryggor. För att säkerställa regelbunden provtagning, tydlig information till allmänheten och långsiktig kontroll av vattenkvaliteten bör platsen klassas som EU-bad.",
+    "euType": true,
+    "id": "SE0110180000007461",
+    "municipality": {
+      "contactInfo": {
+        "email": "miljoforvaltningen@stockholm.se",
+        "phone": "08-50828800",
+        "url": "start.stockholm"
+      },
+      "id": 180,
+      "name": "Stockholm"
+    },
+    "name": "Sjövikskajens bryggbad",
+    "notEuMotive": "false",
+    "perimeterCoordinates": [],
+    "samplingPointPosition": {
+      "latitude": "59.3073",
+      "longitude": "18.0334"
+    },
+    "waterTypeId": 3,
+    "waterTypeIdText": "Sjö"
+  },
+  "profile": {
+    "bathingSeason": {
+      "endsAt": "2026-08-14T22:00:00Z",
+      "startsAt": "2026-06-20T22:00:00Z"
+    },
+    "bloomRisk": {
+      "algae": false,
+      "cyano": false
+    },
+    "lastFourClassifications": [
+      {
+        "qualityClassId": 0,
+        "qualityClassIdText": "Ej klassificerad",
+        "year": 2025
+      },
+      {
+        "qualityClassId": 0,
+        "qualityClassIdText": "Ej klassificerad",
+        "year": 2024
+      },
+      {
+        "qualityClassId": 0,
+        "qualityClassIdText": "Ej klassificerad",
+        "year": 2023
+      },
+      {
+        "qualityClassId": 0,
+        "qualityClassIdText": "Ej klassificerad",
+        "year": 2022
+      }
+    ],
+    "localAuthorities": {
+      "administrative": {
+        "contactInfo": {
+          "address": "Tekniska Nämndhuset",
+          "email": "trafikkontoret@stockholm.se",
+          "name": "Trafikkontoret Stockholms stad",
+          "phone": "08-508 27 200",
+          "visitAddress": "Fleminggatan 4"
+        }
+      },
+      "supervisory": {
+        "contactInfo": {
+          "address": "Tekniska Nämndhuset",
+          "email": "miljoforvaltningen@stockholm.se",
+          "name": "Miljöförvaltningen Stockholms stad",
+          "phone": "08-508 28 800",
+          "visitAddress": "Fleminggatan 4"
+        }
+      }
+    },
+    "pollutionSources": [],
+    "summary": "Vattenförekomst\n\nSjövikskajens bryggbad är beläget i Liljeholmsviken/Årstaviken, som är en del av Mälaren i Stockholm. Vattnet är sötvatten med reglerad nivå och måttlig vattenomsättning. Området är starkt urbaniserat med kajer och bebyggd strandlinje. Vattenkvaliteten påverkas främst av näringsämnen, dagvatten och båttrafik.\n\nAvrinningsområde\n\nBadplatsen påverkas lokalt av dagvatten från Liljeholmens tätbebyggda stadsområde med hårdgjorda ytor och trafik. Vid kraftig nederbörd kan tillrinning föra med sig näringsämnen, partiklar och mikroorganismer till recipienten. Mälarens större avrinningsområde bidrar övergripande till vattenomsättning och bakgrundshalter.",
+    "updateDetail": {
+      "authoredBy": "Stockholms stad miljöförvaltningen",
+      "frequency": "Har inte fått en klassificering ännu, uppdateras om något förändras. ",
+      "latestAt": "2026-02-24T23:00:00Z",
+      "schedule": "Uppdateras om något förändras. "
+    }
+  },
+  "results": [
+    {
+      "algalId": 5,
+      "algalIdText": "Ingen uppgift",
+      "escherichiaColiAssessId": 1,
+      "escherichiaColiAssessIdText": "Tjänligt",
+      "escherichiaColiCount": 46,
+      "escherichiaColiPrefix": "=",
+      "intestinalEnterococciAssessId": 1,
+      "intestinalEnterococciAssessIdText": "Tjänligt",
+      "intestinalEnterococciCount": 10,
+      "intestinalEnterococciPrefix": "=",
+      "sampleAssessId": 1,
+      "sampleAssessIdText": "Tjänligt",
+      "sampleComplete": true,
+      "takenAt": "2026-06-07T22:00:00Z",
+      "waterTemp": "19",
+      "weatherId": 1,
+      "weatherIdText": "Klart"
+    },
+    {
+      "algalId": 4,
+      "algalIdText": "Ingen blomning",
+      "escherichiaColiAssessId": 1,
+      "escherichiaColiAssessIdText": "Tjänligt",
+      "escherichiaColiCount": 12,
+      "escherichiaColiPrefix": "=",
+      "intestinalEnterococciAssessId": 1,
+      "intestinalEnterococciAssessIdText": "Tjänligt",
+      "intestinalEnterococciCount": 10,
+      "intestinalEnterococciPrefix": "<",
+      "sampleAssessId": 1,
+      "sampleAssessIdText": "Tjänligt",
+      "sampleComplete": true,
+      "takenAt": "2026-05-25T22:00:00Z",
+      "waterTemp": "15",
+      "weatherId": 2,
+      "weatherIdText": "Viss molnighet"
+    }
+  ],
+  "waterTemperature": []
+}
