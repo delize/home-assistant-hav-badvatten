@@ -1,7 +1,6 @@
 # Swedish Bathing Water Quality
 
-> Home Assistant integration name: **Swedish Bathing Water Quality** (English) /
-> **Badplatsen** (Swedish). Domain: `hav_badvatten`.
+> Home Assistant integration name: **Swedish Bathing Water Quality** (English), **Badplatsen** (Swedish). Domain: `hav_badvatten`.
 
 [![Validate](https://github.com/delize/home-assistant-hav-badvatten/actions/workflows/validate.yaml/badge.svg)](https://github.com/delize/home-assistant-hav-badvatten/actions/workflows/validate.yaml)
 [![hacs](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
@@ -9,71 +8,70 @@
 
 [![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=delize&repository=home-assistant-hav-badvatten&category=integration)
 
-Home Assistant custom integration for Swedish **bathing-water quality**, sourced
-from the Havs- och vattenmyndigheten (HaV) *Badplatsen* open API. It surfaces the
-EU water-quality classification, the latest sample verdict (E. coli / intestinal
-enterococci), the measured water temperature, the SMHI/Copernicus water-temp
-forecast, and any live advisories ("avrådan från bad") for a bathing site.
+Home Assistant custom integration for Swedish bathing-water quality from the
+Havs- och vattenmyndigheten (HaV) *Badplatsen* open API. For each bathing site it
+provides the EU water-quality classification, the latest sample result (E. coli
+and intestinal enterococci), the measured water temperature, an air and wind
+forecast, and any active advisory ("avrådan från bad").
 
-One config entry == one bathing site == one Home Assistant device.
+One config entry is one bathing site, and each becomes a Home Assistant device.
 
-> Sweden has ~2 600 registered bathing waters. There is no existing Home
-> Assistant integration for this data set — this fills that gap.
+> Sweden has roughly 2,600 registered bathing waters. There was no Home
+> Assistant integration for this data before this one.
 
 ## Data source
 
-This integration uses HaV's **official, versioned public API**
-(`bathing-waters`, v2):
+This integration uses HaV's official, versioned public API (`bathing-waters`, v2):
 
 ```
 https://gw.havochvatten.se/external-public/bathing-waters/v2
 ```
 
-- `GET /bathing-waters` — national list of active baths (drives search)
-- `GET /bathing-waters/{id}` — combined profile + sample results + forecast +
-  advisories for one bath (one call per update)
+- `GET /bathing-waters` returns the national list of active baths, which drives
+  search.
+- `GET /bathing-waters/{id}` returns a combined object for one bath (profile,
+  sample results, forecast, advisories) in a single call per update.
 
-No API key, unauthenticated, JSON. Data updates a few times per day at most.
-See HaV's [API documentation][hav-api] and the
-[open-data usage terms][hav-terms]. The bathing-water id (`bathingWaterId`,
-formerly `nutsCode`, e.g. `SE0110180000007461`) is the same id used by
-doppkartan's `?site=` parameter.
+It needs no API key and returns JSON. Data updates a few times per day at most.
+See HaV's [API documentation][hav-api] and the [open-data usage terms][hav-terms].
+The bathing-water id (`bathingWaterId`, formerly `nutsCode`, e.g.
+`SE0110180000007461`) is the same id used by doppkartan's `?site=` parameter.
 
-### Weather (air temperature + wind)
+### Weather (air temperature and wind)
 
-The HaV API has no air-temperature or wind forecast (only the Copernicus
-water-temperature one), so the **Air temperature** and **Wind speed** sensors
-come from a **selectable provider** (per entry, in the options flow):
+The HaV API has no air-temperature or wind forecast, only the Copernicus
+water-temperature one. The Air temperature and Wind speed sensors therefore come
+from a provider you pick per entry in the options flow:
 
-- **SMHI SNOW** (default) — the Swedish Meteorological and Hydrological
-  Institute's operational forecast (`snow1g`); authoritative for Sweden, m/s,
-  **CC BY 4.0**.
-- **Open-Meteo** — global, current conditions, m/s, **CC BY 4.0**; the source
+- **SMHI SNOW** (default). The Swedish Meteorological and Hydrological Institute's
+  operational forecast (`snow1g`). Swedish-specific, m/s, CC BY 4.0.
+- **Open-Meteo**. Global, m/s, CC BY 4.0. This is the source
   [doppkartan](https://www.doppkartan.se/) uses.
 
-Both are normalised to the same fields, so switching providers doesn't change
-the entities — only the data source and attribution (the two weather sensors
-carry their provider's attribution; everything else is attributed to HaV). The
-`provider` attribute on each sensor records which one produced the value.
+Both providers are normalised to the same fields, so switching does not change
+the entities. Only the data source and the attribution change (the two weather
+sensors carry their provider's attribution, and everything else is attributed to
+HaV). Each sensor's `provider` attribute records which one produced the value.
 
-> Open-Meteo's *marine* (sea-surface-temperature) API is deliberately not used:
-> it snaps inland coordinates to the nearest sea cell, so for a lake it reports
-> the Baltic instead of the lake. Inland water temperature is only available
-> from HaV's physical samples (the *Water temperature (measured)* sensor).
+> Open-Meteo's *marine* (sea-surface-temperature) API is not used. It snaps
+> inland coordinates to the nearest sea cell, so for a lake it reports the Baltic
+> rather than the lake. Inland water temperature comes only from HaV's physical
+> samples (the *Water temperature (measured)* sensor).
 
-For **sun position** (doppkartan uses suncalc), Home Assistant's built-in
+For sun position (doppkartan uses suncalc), Home Assistant's built-in
 [`sun`](https://www.home-assistant.io/integrations/sun/) integration already
-exposes elevation/azimuth via `sun.sun` — see the example card.
+exposes elevation and azimuth via `sun.sun`. See the example card.
 
 ### Baltic cyanobacteria (coastal baths)
 
 [SMHI Algae Maps](https://opendata.smhi.se/algaemaps/introduction) publishes a
-daily satellite cyanobacteria-bloom compilation for the Baltic (June–September),
-with bilingual text summaries — free, no key, **CC BY 4.0**. This is *regional*,
-not per-bath, so the **Baltic cyanobacteria** sensor is only added to **coastal
-("Hav") baths**; inland lakes don't get it (their algae situation is covered by
-the per-bath *Advice against bathing* signal from HaV). The sensor's `map_url`
-attribute points at the current bloom-map PNG — render it with a markdown card:
+daily satellite cyanobacteria-bloom compilation for the Baltic (June to
+September), with bilingual text summaries. It is free and needs no key
+(CC BY 4.0). The data is regional rather than per-bath, so the Baltic cyanobacteria
+sensor is added only to coastal ("Hav") baths. Inland lakes do not get it; their
+algae situation is covered by the per-bath *Advice against bathing* signal from
+HaV. The sensor's `map_url` attribute points at the current bloom-map PNG, which
+you can render with a markdown card:
 
 ```yaml
 type: markdown
@@ -90,14 +88,14 @@ content: >
 
 ### HACS (recommended)
 
-Click the **"Open inside HACS"** badge above, or add it manually:
+Use the "Open inside HACS" badge above, or add it manually:
 
 1. HACS → ⋮ → **Custom repositories**.
 2. Add `https://github.com/delize/home-assistant-hav-badvatten` with category
    **Integration**.
-3. Install **HaV Badvatten**, then restart Home Assistant.
+3. Install **Swedish Bathing Water Quality**, then restart Home Assistant.
 
-(Maintainers: see [`PUBLISHING.md`](PUBLISHING.md) for releasing and getting
+(Maintainers: see [`PUBLISHING.md`](PUBLISHING.md) for releasing and for getting
 into the HACS default store.)
 
 ### Manual
@@ -107,80 +105,81 @@ Copy `custom_components/hav_badvatten/` into your Home Assistant
 
 ## Configuration
 
-Add via **Settings → Devices & Services → Add Integration → HaV Badvatten**.
-The config flow is search-based:
+Add it via **Settings → Devices & Services → Add Integration → Swedish Bathing
+Water Quality**. The config flow is search-based:
 
-- **Search** by name or municipality (e.g. `Sjövik`, `Stockholm`), then pick a
-  site from the dropdown.
-- **Leave both fields empty** to list the sites nearest your Home Assistant
-  home location.
-- **Advanced:** paste a `bathingWaterId` (e.g. `SE0110180000007461`) or a
-  doppkartan/karta link to skip search entirely.
+- **Search** by name or municipality (for example `Sjövik` or `Stockholm`), then
+  pick a site from the dropdown.
+- **Leave both fields empty** to list the sites nearest your Home Assistant home
+  location.
+- **Advanced:** paste a `bathingWaterId` (for example `SE0110180000007461`) or a
+  doppkartan/karta link to skip search.
 
-Add the integration again for each additional bathing site.
+Repeat for each additional bathing site.
 
-Per-entry **options** let you change the update interval (default 180 minutes,
-range 30–1440) and the **weather provider** (SMHI SNOW or Open-Meteo). Changing
-an option reloads that bath.
+Each entry's options let you change the update interval (default 180 minutes,
+range 30 to 1440) and the weather provider (SMHI SNOW or Open-Meteo). Changing an
+option reloads that bath.
 
 ## Entities
 
-Each bathing site is one device with these entities:
+Each bathing site is one device with these entities.
 
 | Entity | Type | Notes |
 | --- | --- | --- |
-| **Bathing status** | sensor | **Headline "can I swim?"** — combines the live advisory with the latest sample into one verdict (*OK to bathe* / *Caution* / *Not suitable* / *Advisory* / *No recent sample*). A live advisory overrides the sample; a sample that's stale — older than ~2× the bath's *own* sampling interval, or from a previous season — reads as *No recent sample* (not a confident "OK"). Attrs carry the reasoning + `sample_age_days`/`sample_interval_days`. |
-| Advisory since | sensor | Timestamp the active advisory began (so you can see it's newer than the sample). *Unknown* when there's none — the `active` attribute and *Advice against bathing* make that explicit. |
-| Water quality classification | sensor | EU classification (e.g. *Excellent*); attrs include 4-year history, EU-bathing flag, profile summary, and municipality/responsible-authority contact. |
-| Water temperature (measured) | sensor | °C, from the latest physical sample. |
-| Water temperature (forecast) | sensor | °C, Copernicus forecast (Open-Meteo fallback inland). |
-| Air temperature | sensor | °C at the bath from SMHI SNOW (or Open-Meteo); `apparent_temperature`/`provider` attributes. |
-| Wind speed | sensor | m/s at the bath from SMHI SNOW (or Open-Meteo); `direction`/`gusts`/`provider` attributes. |
-| Bathing season | sensor | `open` / `closed`; attrs are season start/end. |
-| Latest sample assessment | sensor (diagnostic) | Bacteria verdict of the most recent lab sample (*Suitable* …) — a periodic test, grouped under **Diagnostic**. Attrs include the per-sample **algae observation** (HaV's "Algae occurrence" column), E. coli/enterococci/temp, and dated history. |
-| E. coli | sensor (diagnostic) | Count per 100 mL from the latest sample; `prefix`/history attributes. |
-| Intestinal enterococci | sensor (diagnostic) | Count per 100 mL from the latest sample; history attribute. |
+| Bathing status | sensor | The headline "can I swim?" verdict. It combines the live advisory with the latest sample into one value (*OK to bathe*, *Caution*, *Not suitable*, *Advisory*, or *No recent sample*). A live advisory overrides the sample. A stale sample (older than about 2× the bath's own sampling interval, or from a previous season) reads as *No recent sample* rather than a confident "OK". Attributes carry the reasoning plus `sample_age_days` and `sample_interval_days`. |
+| Advisory since | sensor | Timestamp when the active advisory began, so you can tell whether it is newer than the sample. *Unknown* when there is none; the `active` attribute and *Advice against bathing* make that explicit. |
+| Water quality classification | sensor | EU classification (for example *Excellent*). Attributes include 4-year history, the EU-bathing flag, the profile summary, and municipality and responsible-authority contact. |
+| Water temperature (measured) | sensor | °C from the latest physical sample. |
+| Water temperature (forecast) | sensor | °C from the Copernicus forecast, with an Open-Meteo fallback inland. |
+| Air temperature | sensor | °C at the bath from SMHI SNOW or Open-Meteo. `apparent_temperature` and `provider` attributes. |
+| Wind speed | sensor | m/s at the bath from SMHI SNOW or Open-Meteo. `direction`, `gusts`, and `provider` attributes. |
+| Bathing season | sensor | `open` or `closed`. Attributes are the season start and end. |
+| Latest sample assessment | sensor (diagnostic) | Bacteria verdict of the most recent lab sample (*Suitable*, and so on). It is a periodic test, so it sits under Diagnostic. Attributes include the per-sample algae observation (HaV's "Algae occurrence" column), the E. coli, enterococci and temperature for that sample, and dated history. |
+| E. coli | sensor (diagnostic) | Count per 100 mL from the latest sample. `prefix` and history attributes. |
+| Intestinal enterococci | sensor (diagnostic) | Count per 100 mL from the latest sample. History attribute. |
 | Last sample | sensor (diagnostic) | Timestamp of the most recent lab sample. |
-| Baltic cyanobacteria (past week) | sensor | **Coastal baths only.** SMHI satellite bloom compilation; diagnostic. State is the map date; attrs hold the EN/SV summary and `map_url`. |
-| Advice against bathing | binary_sensor | **Live** safety signal — on when an advisory (e.g. algal bloom, swimming ban) is active. |
-| Susceptible to algal blooms | binary_sensor | **Static** diagnostic flag — this site is historically *susceptible* to algal/cyanobacteria blooms (awareness, not a live alert). |
-| Advisory may be outdated | binary_sensor (diagnostic) | On when an advisory has been active **≥ 16 days**, **in season**, and the bath has been **sampled since** it was issued (e.g. a recurring-bloom advisory that's never lifted) — a "worth re-checking" hint. Attrs: `advisory_age_days`, `samples_since_advisory`, `in_season`. **Does not** clear the safety signal. |
+| Baltic cyanobacteria (past week) | sensor | Coastal baths only. SMHI satellite bloom compilation, diagnostic. The state is the map date; attributes hold the EN/SV summary and `map_url`. |
+| Advice against bathing | binary_sensor | The live safety signal. On when an advisory (such as an algal bloom or a swimming ban) is active. |
+| Susceptible to algal blooms | binary_sensor | A static diagnostic flag for whether this site is historically susceptible to algal or cyanobacteria blooms. It is awareness, not a live alert. |
+| Advisory may be outdated | binary_sensor (diagnostic) | On when an advisory has been active for at least 16 days, in season, and the bath has been sampled since it was issued (for example a recurring-bloom advisory that was never lifted). A "worth re-checking" hint. Attributes: `advisory_age_days`, `samples_since_advisory`, `in_season`. It does not clear the safety signal. |
 
 ## Caveats
 
 - **Inland water-temp forecast is an approximation.** HaV's Copernicus forecast
   (`waterTemperature`) only covers coastal ("Hav") sites. On lakes ("Sjö") the
-  *Water temperature (forecast)* sensor falls back to **Open-Meteo's sea-surface
-  temperature** at the bath's coordinates — accurate for coastal/Baltic-adjacent
-  sites, but for a lake far from the sea it snaps to the nearest sea cell and may
-  be off. The sensor's `source` attribute reports `hav-copernicus` or
-  `open-meteo`, and the attribution updates accordingly. The *Water temperature
-  (measured)* sensor (from physical samples) is the most reliable inland signal.
-- **`Advice against bathing` is the live signal; `Susceptible to algal blooms` is not.**
-  The latter is a static profile flag ("this site tends to bloom" — awareness),
-  while *Advice against bathing* reflects an actual current advisory.
+  *Water temperature (forecast)* sensor falls back to Open-Meteo's sea-surface
+  temperature at the bath's coordinates. That is accurate for coastal and
+  Baltic-adjacent sites, but for a lake far from the sea it snaps to the nearest
+  sea cell and may be wrong. The sensor's `source` attribute reports
+  `hav-copernicus` or `open-meteo`, and the attribution updates to match. The
+  *Water temperature (measured)* sensor (from physical samples) is the more
+  reliable inland value.
+- **`Advice against bathing` is the live signal; `Susceptible to algal blooms` is
+  not.** The latter is a static profile flag for whether a site tends to bloom.
+  *Advice against bathing* reflects an actual current advisory.
 - **Nearest-first search needs a real home location.** Home Assistant defaults
-  latitude/longitude to `0,0` on a fresh install. Until you set your real home
-  location (Settings → System → General), the "leave fields empty for nearest
-  sites" path ranks against the Gulf of Guinea, not Sweden. Search by name or
-  municipality works regardless.
-- **Not real-time.** HaV publishes data a few times per day; the default
-  3-hour poll is intentionally gentle.
+  latitude and longitude to `0,0` on a fresh install. Until you set your real
+  home location (Settings → System → General), the "leave fields empty for
+  nearest sites" path ranks against the Gulf of Guinea rather than Sweden. Search
+  by name or municipality works regardless.
+- **Not real-time.** HaV publishes data a few times per day, so the default
+  3-hour poll is conservative.
 
 ## Dashboard card
 
 Two example cards are in [`lovelace/`](lovelace):
 
-- **[`badvatten-card-auto.yaml`](lovelace/badvatten-card-auto.yaml)** — zero
-  config: uses `custom:auto-entities` (HACS) to pull in every entity for a bath
-  by its **device name**, so there are no entity-id slugs to copy. Recommended
-  if you just want all the values listed.
-- **[`badvatten-card.yaml`](lovelace/badvatten-card.yaml)** — a hand-styled
+- [`badvatten-card-auto.yaml`](lovelace/badvatten-card-auto.yaml) needs no
+  configuration. It uses `custom:auto-entities` (HACS) to pull in every entity
+  for a bath by its device name, so there are no entity-id slugs to copy. Use
+  this if you just want all the values listed.
+- [`badvatten-card.yaml`](lovelace/badvatten-card.yaml) is a hand-styled,
   colour-coded card (live advisory in red, safe sample in green, sample age as a
-  relative "För N dgr sedan"), using `custom:template-entity-row` + `card-mod`
-  (both HACS). This one references entity-ids directly — replace the prefix with
-  your bath's slug (`sensor.<device-name-slug>_<entity-name-slug>`; copy the
-  exact ids from **Developer Tools → States**).
+  relative "För N dgr sedan"), using `custom:template-entity-row` and `card-mod`
+  (both HACS). It references entity-ids directly, so replace the prefix with your
+  bath's slug (`sensor.<device-name-slug>_<entity-name-slug>`; copy the exact ids
+  from **Developer Tools → States**).
 
 ## Development
 
@@ -194,13 +193,14 @@ pip install -r tests/requirements_test.txt
 python -m pytest tests/ -q
 ```
 
-The smoke tests cover id extraction, API parsing, and every sensor /
-binary-sensor value against fixtures captured from the live HaV v2, Open-Meteo
-and SMHI APIs.
+The smoke tests check id extraction, API parsing, and the value of every sensor
+and binary sensor. They run against fixtures captured from the live HaV v2,
+Open-Meteo and SMHI APIs.
 
 ### CI/CD
 
-**CI** — [`.github/workflows/validate.yaml`](.github/workflows/validate.yaml) runs on every push/PR (and weekly, to catch upstream HA/HACS drift):
+**CI.** [`.github/workflows/validate.yaml`](.github/workflows/validate.yaml) runs
+on every push and PR, and weekly to catch upstream HA or HACS drift:
 
 | Job | What it does |
 | --- | --- |
@@ -214,25 +214,25 @@ and SMHI APIs.
 Mirror it locally with [pre-commit](https://pre-commit.com):
 `pip install pre-commit && pre-commit install`.
 
-**CD** — releasing is GitHub-Release-driven (the HACS-native pattern):
+**CD.** Releasing is driven by GitHub Releases (the HACS-native pattern):
 
 1. Merge PRs to `main`. [Release Drafter](.github/workflows/release-drafter.yaml)
    keeps a draft release updated from PR labels and proposes the next version.
 2. Publish the draft with a `vX.Y.Z` tag.
 3. [`release.yaml`](.github/workflows/release.yaml) stamps the tag into
-   `manifest.json`, zips the integration to `hav_badvatten.zip`, and attaches it
-   to the release. HACS installs that asset (`hacs.json` → `zip_release`), so the
-   published version always matches the tag — no manual manifest bump needed.
+   `manifest.json`, then builds and attaches `hav_badvatten.zip`. HACS installs
+   that asset (`hacs.json` `zip_release`), so the published version always matches
+   the tag, with no manual manifest bump.
 
-Dependencies (GitHub Actions + test deps) are kept current by
-[Dependabot](.github/dependabot.yml).
+[Dependabot](.github/dependabot.yml) keeps the GitHub Actions and test
+dependencies current.
 
 ## Disclaimer
 
-Bathing-water advisories here mirror HaV's published data and can lag real
-conditions. Always check official local signage and HaV's
-[Badplatsen][badplatsen] before swimming. This integration is not affiliated
-with or endorsed by Havs- och vattenmyndigheten.
+Advisories here mirror HaV's published data and can lag real conditions. Always
+check official local signage and HaV's [Badplatsen][badplatsen] before swimming.
+This integration is not affiliated with or endorsed by Havs- och
+vattenmyndigheten.
 
 [badplatsen]: https://www.havochvatten.se/badplatser-och-badvatten.html
 
