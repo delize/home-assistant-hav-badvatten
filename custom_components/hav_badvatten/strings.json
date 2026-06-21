@@ -44,7 +44,8 @@
           "suitable": "OK to bathe",
           "caution": "Bathe with caution",
           "unsuitable": "Not suitable for bathing",
-          "advisory": "Advisory — avoid bathing"
+          "advisory": "Advisory — avoid bathing",
+          "no_recent_sample": "No recent sample"
         }
       },
       "advisory_since": { "name": "Advisory since" },

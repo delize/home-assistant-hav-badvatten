@@ -204,13 +204,38 @@ def _advisory_since(data: dict) -> datetime | None:
 # Headline swim status: a live advisory overrides the latest sample, and
 # sampleAssessId 2 ("suitable with remarks") becomes "caution".
 STATUS_BY_ASSESS_ID = {1: "suitable", 2: "caution", 3: "unsuitable"}
-BATHING_STATUS_OPTIONS = ["suitable", "caution", "unsuitable", "advisory"]
+BATHING_STATUS_OPTIONS = [
+    "suitable",
+    "caution",
+    "unsuitable",
+    "advisory",
+    "no_recent_sample",
+]
+
+# In-season sampling is roughly biweekly, so a sample older than this is from a
+# previous season (or a long gap) and must not read as a live "OK to bathe".
+MAX_SAMPLE_AGE_DAYS = 45
+
+
+def _sample_age_days(data: dict) -> int | None:
+    taken = _parse_dt(_latest_result(data).get("takenAt"))
+    return (dt_util.utcnow() - taken).days if taken else None
+
+
+def _sample_is_stale(data: dict) -> bool:
+    age = _sample_age_days(data)
+    return age is not None and age > MAX_SAMPLE_AGE_DAYS
 
 
 def _bathing_status(data: dict) -> str | None:
     if _advisories(data):
         return "advisory"
-    return STATUS_BY_ASSESS_ID.get(_latest_result(data).get("sampleAssessId"))
+    status = STATUS_BY_ASSESS_ID.get(_latest_result(data).get("sampleAssessId"))
+    if status is None:
+        return None  # no sample, or an unrecognised verdict -> unknown
+    if _sample_is_stale(data):
+        return "no_recent_sample"  # don't trust an old sample as a live verdict
+    return status
 
 
 def _sample_history(data: dict, value_key: str, extra: dict[str, str]) -> list[dict]:
@@ -235,7 +260,13 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
         # The reasoning, so one tap explains why it differs from the sample:
         # "Advisory (algal bloom) since 06-15; last sample 06-08 was suitable."
         attr_fn=lambda d: {
-            "based_on": "advisory" if _advisories(d) else "latest_sample",
+            "based_on": (
+                "advisory"
+                if _advisories(d)
+                else "no_recent_sample"
+                if _sample_is_stale(d)
+                else "latest_sample"
+            ),
             "advisory_type": (
                 _advisories(d)[0].get("typeIdText") if _advisories(d) else None
             ),
@@ -247,6 +278,7 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
             ),
             "last_sample_result": _latest_result(d).get("sampleAssessIdText"),
             "last_sample_at": _latest_result(d).get("takenAt"),
+            "sample_age_days": _sample_age_days(d),
         },
     ),
     # When the active advisory began. Unknown == no active advisory (the

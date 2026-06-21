@@ -44,7 +44,8 @@
           "suitable": "Tjänligt för bad",
           "caution": "Bada med försiktighet",
           "unsuitable": "Otjänligt för bad",
-          "advisory": "Avrådan — bada inte"
+          "advisory": "Avrådan — bada inte",
+          "no_recent_sample": "Inget aktuellt prov"
         }
       },
       "advisory_since": { "name": "Avrådan sedan" },

@@ -64,6 +64,19 @@ def test_bathing_status_from_latest_sample(coastal):
     assert status.extra_state_attributes["based_on"] == "latest_sample"
 
 
+def test_bathing_status_stale_sample_guard():
+    # Norraryd: no advisory, but the only sample is from last August (~313 days).
+    # The verdict must not read as a confident "OK to bathe".
+    from conftest import FakeCoordinator, load_fixture
+
+    coord = FakeCoordinator("SE0920763000001135", load_fixture("bath_stale.json"))
+    status = _by_key(coord)["bathing_status"]
+    assert status.native_value == "no_recent_sample"
+    attrs = status.extra_state_attributes
+    assert attrs["based_on"] == "no_recent_sample"
+    assert attrs["sample_age_days"] > 45
+
+
 def test_advisory_since_active(inland):
     from datetime import datetime
 
