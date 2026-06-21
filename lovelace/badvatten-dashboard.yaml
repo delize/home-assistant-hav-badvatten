@@ -1,0 +1,124 @@
+# A polished, multi-section dashboard card for one bathing site.
+#
+# Replace the entity prefix `sjovikskajens_bryggbad` everywhere with your bath's
+# slug (Developer Tools -> States to find it) and the title on line ~17.
+#
+# Requires two HACS frontend cards: `template-entity-row` and `card-mod`.
+# Everything else is built into Home Assistant. If card-mod isn't installed the
+# `card_mod:` styling is ignored, so the card still works (just less styled).
+type: vertical-stack
+cards:
+  # --- Headline: colour-coded "can I swim?" verdict + advisory age ----------
+  - type: entities
+    title: Sjövikskajens bryggbad
+    show_header_toggle: false
+    card_mod:
+      style: |
+        .card-header { font-size: 20px; }
+    entities:
+      - type: custom:template-entity-row
+        entity: sensor.sjovikskajens_bryggbad_bathing_status
+        name: Status
+        icon: >-
+          {% set s = states('sensor.sjovikskajens_bryggbad_bathing_status') %}
+          {% if s == 'suitable' %}mdi:swim
+          {% elif s == 'caution' %}mdi:alert
+          {% elif s == 'unsuitable' %}mdi:close-octagon
+          {% elif s == 'advisory' %}mdi:alert-octagon
+          {% else %}mdi:help-circle-outline{% endif %}
+        color: >-
+          {% set s = states('sensor.sjovikskajens_bryggbad_bathing_status') %}
+          {% if s == 'suitable' %}#4CAF50
+          {% elif s == 'caution' %}orange
+          {% elif s in ['unsuitable', 'advisory'] %}#F44336
+          {% else %}grey{% endif %}
+      - entity: binary_sensor.sjovikskajens_bryggbad_advice_against_bathing
+        name: Advice against bathing
+      - type: custom:template-entity-row
+        entity: sensor.sjovikskajens_bryggbad_advisory_since
+        name: Advisory since
+        icon: mdi:calendar-alert
+        state: >-
+          {% set t = states('sensor.sjovikskajens_bryggbad_advisory_since') %}
+          {% if t in ['unknown', 'unavailable', 'none', ''] %}No advisory
+          {% else %}{{ relative_time(as_datetime(t)) }} ago{% endif %}
+        color: >-
+          {% set t = states('sensor.sjovikskajens_bryggbad_advisory_since') %}
+          {% if t in ['unknown', 'unavailable', 'none', ''] %}grey
+          {% else %}#F44336{% endif %}
+
+  # --- Red banner: only shown while an advisory is active -------------------
+  - type: conditional
+    conditions:
+      - entity: binary_sensor.sjovikskajens_bryggbad_advice_against_bathing
+        state: "on"
+    card:
+      type: markdown
+      content: >-
+        ### ⛔ Avoid bathing
+
+
+        {{ state_attr('binary_sensor.sjovikskajens_bryggbad_advice_against_bathing', 'latest')
+           or 'A swimming advisory is in effect.' }}
+        ({{ state_attr('binary_sensor.sjovikskajens_bryggbad_advice_against_bathing', 'latest_type') }})
+      card_mod:
+        style: |
+          ha-card {
+            background: rgba(244, 67, 54, 0.12);
+            border: 1px solid rgba(244, 67, 54, 0.6);
+          }
+
+  # --- Conditions at a glance -----------------------------------------------
+  - type: glance
+    columns: 4
+    show_name: true
+    show_state: true
+    entities:
+      - entity: sensor.sjovikskajens_bryggbad_water_temperature_measured
+        name: Water
+      - entity: sensor.sjovikskajens_bryggbad_water_temperature_forecast
+        name: Water (fcst)
+      - entity: sensor.sjovikskajens_bryggbad_air_temperature
+        name: Air
+      - entity: sensor.sjovikskajens_bryggbad_wind_speed
+        name: Wind
+
+  # --- Water quality + most recent lab sample -------------------------------
+  - type: entities
+    title: Water quality & samples
+    show_header_toggle: false
+    entities:
+      - entity: sensor.sjovikskajens_bryggbad_water_quality_classification
+        name: EU classification
+      - entity: sensor.sjovikskajens_bryggbad_last_sample
+        name: Last sample
+      - type: custom:template-entity-row
+        entity: sensor.sjovikskajens_bryggbad_e_coli
+        name: E. coli
+        secondary: >-
+          {{ state_attr('sensor.sjovikskajens_bryggbad_e_coli', 'assessment') }}
+      - type: custom:template-entity-row
+        entity: sensor.sjovikskajens_bryggbad_intestinal_enterococci
+        name: Intestinal enterococci
+        secondary: >-
+          {{ state_attr('sensor.sjovikskajens_bryggbad_intestinal_enterococci', 'assessment') }}
+      - entity: sensor.sjovikskajens_bryggbad_bathing_season
+        name: Bathing season
+      - entity: binary_sensor.sjovikskajens_bryggbad_susceptible_to_algal_blooms
+        name: Susceptible to algal blooms
+
+  # --- Baltic cyanobacteria map (coastal baths only; auto-hides on inland) ---
+  - type: conditional
+    conditions:
+      - entity: sensor.sjovikskajens_bryggbad_baltic_cyanobacteria
+        state_not: unavailable
+    card:
+      type: markdown
+      content: >-
+        **Baltic cyanobacteria (SMHI)**
+
+
+        {{ state_attr('sensor.sjovikskajens_bryggbad_baltic_cyanobacteria', 'summary_en') }}
+
+
+        ![bloom map]({{ state_attr('sensor.sjovikskajens_bryggbad_baltic_cyanobacteria', 'map_url') }})
