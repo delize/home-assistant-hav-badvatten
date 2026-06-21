@@ -64,9 +64,8 @@ SMHI_FORECAST_URL = (
 SMHI_WEATHER_ATTRIBUTION = "Väder: SMHI (CC BY 4.0)"
 
 # Open-Meteo (alternative) — global, current conditions; the source doppkartan
-# uses. Note: its marine (sea-surface-temp) API is deliberately NOT used — it
-# snaps inland coordinates to the nearest sea cell (reports the Baltic, not the
-# lake). Inland water temp is only available from HaV samples (water_temp_measured).
+# uses. Its marine (sea-surface-temp) API is used separately, only as the
+# inland water-temp forecast fallback (see OPEN_METEO_MARINE_URL below).
 OPEN_METEO_URL = (
     "https://api.open-meteo.com/v1/forecast"
     "?latitude={lat}&longitude={lon}"
