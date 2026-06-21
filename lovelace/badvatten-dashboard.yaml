@@ -1,8 +1,7 @@
 # A polished, multi-section dashboard card for one bathing site, using only
 # built-in Home Assistant cards (markdown, glance, entities, conditional).
-# No custom/HACS frontend cards are required. card-mod is used for the red
-# advisory banner only; if it isn't installed that key is ignored and the
-# banner still shows, just without the red background.
+# No custom/HACS frontend cards are required, and it stays fully editable in the
+# visual editor.
 #
 # Replace the entity prefix `sjovikskajens_bryggbad` everywhere with your bath's
 # slug (Developer Tools -> States), and the name on the "## ..." line.
@@ -27,19 +26,13 @@ cards:
     card:
       type: markdown
       content: |
-        ### ⛔ Avoid bathing
+        ## ⛔ Avoid bathing
 
-        {{ state_attr('binary_sensor.sjovikskajens_bryggbad_advice_against_bathing', 'latest') or 'A swimming advisory is in effect.' }}
+        **{{ state_attr('binary_sensor.sjovikskajens_bryggbad_advice_against_bathing', 'latest') or 'A swimming advisory is in effect.' }}**
         ({{ state_attr('binary_sensor.sjovikskajens_bryggbad_advice_against_bathing', 'latest_type') }})
 
         {% set t = states('sensor.sjovikskajens_bryggbad_advisory_since') %}
         {% if t not in ['unknown', 'unavailable', 'none', ''] %}*Active since {{ as_timestamp(t) | timestamp_custom('%Y-%m-%d') }} ({{ relative_time(as_datetime(t)) }} ago).*{% endif %}
-      card_mod:
-        style: |
-          ha-card {
-            background: rgba(244, 67, 54, 0.12);
-            border: 1px solid rgba(244, 67, 54, 0.6);
-          }
 
   # --- Conditions at a glance -----------------------------------------------
   - type: glance
