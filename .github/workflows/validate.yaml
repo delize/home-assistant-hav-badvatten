@@ -49,7 +49,7 @@ jobs:
         python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -r tests/requirements_test.txt
@@ -62,7 +62,7 @@ jobs:
     # path. This installs real Home Assistant and imports every module.
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - run: pip install homeassistant
@@ -83,7 +83,7 @@ jobs:
     # run the real flow under Home Assistant via pytest-homeassistant-custom-component.
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - run: pip install -r tests_ha/requirements_test.txt
