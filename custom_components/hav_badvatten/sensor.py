@@ -195,6 +195,12 @@ def _advisories(data: dict) -> list[dict]:
     return data.get("adviceAgainstBathing") or []
 
 
+def _advisory_since(data: dict) -> datetime | None:
+    """When the bath first came under an active advisory (earliest startsAt)."""
+    starts = [a.get("startsAt") for a in _advisories(data) if a.get("startsAt")]
+    return _parse_dt(min(starts)) if starts else None
+
+
 # Headline swim status: a live advisory overrides the latest sample, and
 # sampleAssessId 2 ("suitable with remarks") becomes "caution".
 STATUS_BY_ASSESS_ID = {1: "suitable", 2: "caution", 3: "unsuitable"}
@@ -226,13 +232,41 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
         options=BATHING_STATUS_OPTIONS,
         icon="mdi:swim",
         value_fn=_bathing_status,
+        # The reasoning, so one tap explains why it differs from the sample:
+        # "Advisory (algal bloom) since 06-15; last sample 06-08 was suitable."
         attr_fn=lambda d: {
             "based_on": "advisory" if _advisories(d) else "latest_sample",
+            "advisory_type": (
+                _advisories(d)[0].get("typeIdText") if _advisories(d) else None
+            ),
             "advisory": (
                 _advisories(d)[0].get("description") if _advisories(d) else None
             ),
-            "sample_assessment": _latest_result(d).get("sampleAssessIdText"),
-            "sampled_at": _latest_result(d).get("takenAt"),
+            "advisory_since": (
+                _advisories(d)[0].get("startsAt") if _advisories(d) else None
+            ),
+            "last_sample_result": _latest_result(d).get("sampleAssessIdText"),
+            "last_sample_at": _latest_result(d).get("takenAt"),
+        },
+    ),
+    # When the active advisory began. Unknown == no active advisory (the
+    # 'Advice against bathing' binary sensor reads 'Safe' in that case).
+    BadvattenSensorDescription(
+        key="advisory_since",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        icon="mdi:calendar-alert",
+        value_fn=_advisory_since,
+        attr_fn=lambda d: {
+            "active": bool(_advisories(d)),
+            "type": (_advisories(d)[0].get("typeIdText") if _advisories(d) else None),
+            "advisories": [
+                {
+                    "type": a.get("typeIdText"),
+                    "since": a.get("startsAt"),
+                    "description": a.get("description"),
+                }
+                for a in _advisories(d)
+            ],
         },
     ),
     BadvattenSensorDescription(
@@ -267,6 +301,7 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
         key="sample_assessment",
         device_class=SensorDeviceClass.ENUM,
         options=SAMPLE_ASSESS_OPTIONS,
+        entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:swim",
         value_fn=lambda d: SAMPLE_ASSESS_BY_ID.get(
             _latest_result(d).get("sampleAssessId")
@@ -359,6 +394,7 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
     BadvattenSensorDescription(
         key="e_coli",
         icon="mdi:bacteria",
+        entity_category=EntityCategory.DIAGNOSTIC,
         native_unit_of_measurement=COUNT_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: _to_int(_latest_result(d).get("escherichiaColiCount")),
@@ -380,6 +416,7 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
     BadvattenSensorDescription(
         key="intestinal_enterococci",
         icon="mdi:bacteria",
+        entity_category=EntityCategory.DIAGNOSTIC,
         native_unit_of_measurement=COUNT_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: _to_int(_latest_result(d).get("intestinalEnterococciCount")),
@@ -401,6 +438,7 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
     BadvattenSensorDescription(
         key="last_sample",
         device_class=SensorDeviceClass.TIMESTAMP,
+        entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: _parse_dt(_latest_result(d).get("takenAt")),
     ),
     BadvattenSensorDescription(

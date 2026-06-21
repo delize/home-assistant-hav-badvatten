@@ -47,6 +47,7 @@
           "advisory": "Advisory — avoid bathing"
         }
       },
+      "advisory_since": { "name": "Advisory since" },
       "classification": {
         "name": "Water quality classification",
         "state": {

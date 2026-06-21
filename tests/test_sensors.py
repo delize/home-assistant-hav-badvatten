@@ -14,6 +14,7 @@ def test_sensor_set_is_complete():
     keys = {d.key for d in S.SENSORS}
     assert keys == {
         "bathing_status",
+        "advisory_since",
         "classification",
         "sample_assessment",
         "water_temp_measured",
@@ -61,6 +62,36 @@ def test_bathing_status_from_latest_sample(coastal):
     status = _by_key(coastal)["bathing_status"]
     assert status.native_value == "suitable"
     assert status.extra_state_attributes["based_on"] == "latest_sample"
+
+
+def test_advisory_since_active(inland):
+    from datetime import datetime
+
+    sensor = _by_key(inland)["advisory_since"]
+    # Sjöviken's advisory starts 2026-06-15T13:28:51Z
+    assert isinstance(sensor.native_value, datetime)
+    assert sensor.native_value.isoformat().startswith("2026-06-15")
+    attrs = sensor.extra_state_attributes
+    assert attrs["active"] is True
+    assert attrs["type"] == "Algblomning"
+
+
+def test_advisory_since_empty_is_unambiguous(coastal):
+    # No advisory (like Tanto) -> value is None (HA "Unknown"), and the
+    # `active` attribute makes the empty state explicit.
+    sensor = _by_key(coastal)["advisory_since"]
+    assert sensor.native_value is None
+    assert sensor.extra_state_attributes["active"] is False
+    assert sensor.extra_state_attributes["advisories"] == []
+
+
+def test_lab_sensors_are_diagnostic():
+    cats = {d.key: d.entity_category for d in S.SENSORS}
+    for key in ("e_coli", "intestinal_enterococci", "sample_assessment", "last_sample"):
+        assert cats[key] == "diagnostic", key
+    # the verdict + advisory date stay primary (no category)
+    assert cats["bathing_status"] is None
+    assert cats["advisory_since"] is None
 
 
 def test_bacteria_history_exposes_trend(inland):

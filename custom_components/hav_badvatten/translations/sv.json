@@ -47,6 +47,7 @@
           "advisory": "Avrådan — bada inte"
         }
       },
+      "advisory_since": { "name": "Avrådan sedan" },
       "classification": {
         "name": "Badvattenklassificering",
         "state": {

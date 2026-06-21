@@ -51,6 +51,23 @@ entities:
         #4CAF50
       {% endif %}
 
+  # --- Advisory since: explicit "No advisory" when there is none ------------
+  - type: custom:template-entity-row
+    entity: sensor.sjovikskajens_bryggbad_advisory_since
+    icon: mdi:calendar-alert
+    name: Avrådan sedan
+    state: >
+      {% set t = states('sensor.sjovikskajens_bryggbad_advisory_since') %}
+      {% if t in ['unknown', 'unavailable', 'none', ''] %}
+        Ingen avrådan
+      {% else %}
+        {{ as_timestamp(t) | timestamp_custom('%Y-%m-%d') }}
+        ({{ relative_time(as_datetime(t)) }} sedan)
+      {% endif %}
+    color: >
+      {% set t = states('sensor.sjovikskajens_bryggbad_advisory_since') %}
+      {% if t in ['unknown', 'unavailable', 'none', ''] %} grey {% else %} red {% endif %}
+
   # --- Latest sample verdict ------------------------------------------------
   - type: custom:template-entity-row
     entity: sensor.sjovikskajens_bryggbad_latest_sample_assessment

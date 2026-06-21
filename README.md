@@ -129,17 +129,18 @@ Each bathing site is one device with these entities:
 
 | Entity | Type | Notes |
 | --- | --- | --- |
-| **Bathing status** | sensor | **Headline "can I swim?"** — combines the live advisory with the latest sample into one verdict (*OK to bathe* / *Caution* / *Not suitable* / *Advisory*). |
+| **Bathing status** | sensor | **Headline "can I swim?"** — combines the live advisory with the latest sample into one verdict (*OK to bathe* / *Caution* / *Not suitable* / *Advisory*). Attrs carry the reasoning (advisory type/date vs last-sample date/result). |
+| Advisory since | sensor | Timestamp the active advisory began (so you can see it's newer than the sample). *Unknown* when there's none — the `active` attribute and *Advice against bathing* make that explicit. |
 | Water quality classification | sensor | EU classification (e.g. *Excellent*); attrs include 4-year history + EU-bathing flag. |
-| Latest sample assessment | sensor | Verdict of the most recent sample (*Suitable* …); attrs carry the sample's E. coli/enterococci/temp + recent history. |
 | Water temperature (measured) | sensor | °C, from the latest physical sample. |
-| Water temperature (forecast) | sensor | °C, Copernicus forecast. **Coastal sites only** (see caveats). |
+| Water temperature (forecast) | sensor | °C, Copernicus forecast (Open-Meteo fallback inland). |
 | Air temperature | sensor | °C at the bath from SMHI SNOW (or Open-Meteo); `apparent_temperature`/`provider` attributes. |
 | Wind speed | sensor | m/s at the bath from SMHI SNOW (or Open-Meteo); `direction`/`gusts`/`provider` attributes. |
-| E. coli | sensor | Count per 100 mL from the latest sample; `prefix` (`<`/`=`) attribute. |
-| Intestinal enterococci | sensor | Count per 100 mL from the latest sample. |
-| Last sample | sensor | Timestamp of the most recent sample. |
 | Bathing season | sensor | `open` / `closed`; attrs are season start/end. |
+| Latest sample assessment | sensor (diagnostic) | Bacteria verdict of the most recent lab sample (*Suitable* …) — a periodic test, so it's grouped under **Diagnostic**, not the live verdict. |
+| E. coli | sensor (diagnostic) | Count per 100 mL from the latest sample; `prefix`/history attributes. |
+| Intestinal enterococci | sensor (diagnostic) | Count per 100 mL from the latest sample; history attribute. |
+| Last sample | sensor (diagnostic) | Timestamp of the most recent lab sample. |
 | Baltic cyanobacteria (past week) | sensor | **Coastal baths only.** SMHI satellite bloom compilation; diagnostic. State is the map date; attrs hold the EN/SV summary and `map_url`. |
 | Advice against bathing | binary_sensor | **Live** safety signal — on when an advisory (e.g. algal bloom, swimming ban) is active. |
 | Susceptible to algal blooms | binary_sensor | **Static** diagnostic flag — this site is historically *susceptible* to algal/cyanobacteria blooms (awareness, not a live alert). |
