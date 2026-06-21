@@ -37,6 +37,15 @@
   },
   "entity": {
     "sensor": {
+      "bathing_status": {
+        "name": "Badstatus",
+        "state": {
+          "suitable": "Tjänligt för bad",
+          "caution": "Bada med försiktighet",
+          "unsuitable": "Otjänligt för bad",
+          "advisory": "Avrådan — bada inte"
+        }
+      },
       "classification": {
         "name": "Badvattenklassificering",
         "state": {

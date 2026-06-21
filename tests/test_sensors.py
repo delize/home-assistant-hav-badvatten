@@ -13,6 +13,7 @@ def _by_key(coord):
 def test_sensor_set_is_complete():
     keys = {d.key for d in S.SENSORS}
     assert keys == {
+        "bathing_status",
         "classification",
         "sample_assessment",
         "water_temp_measured",
@@ -47,6 +48,27 @@ def test_inland_values(inland):
     assert s["intestinal_enterococci"].native_value == 10
     assert isinstance(s["last_sample"].native_value, datetime)
     assert s["bathing_season"].native_value == "open"
+
+
+def test_bathing_status_advisory_overrides(inland):
+    status = _by_key(inland)["bathing_status"]
+    assert status.native_value == "advisory"  # live advisory beats the sample
+    assert status.extra_state_attributes["based_on"] == "advisory"
+    assert status.extra_state_attributes["advisory"]  # description present
+
+
+def test_bathing_status_from_latest_sample(coastal):
+    status = _by_key(coastal)["bathing_status"]
+    assert status.native_value == "suitable"
+    assert status.extra_state_attributes["based_on"] == "latest_sample"
+
+
+def test_bacteria_history_exposes_trend(inland):
+    s = _by_key(inland)
+    ecoli_hist = s["e_coli"].extra_state_attributes["history"]
+    assert ecoli_hist[0]["value"] == 46  # newest sample first
+    assert ecoli_hist[0]["assessment"]  # carries the per-sample verdict
+    assert s["sample_assessment"].extra_state_attributes["e_coli"] == 46
 
 
 def test_inland_weather_from_open_meteo(inland):

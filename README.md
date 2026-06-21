@@ -126,8 +126,9 @@ Each bathing site is one device with these entities:
 
 | Entity | Type | Notes |
 | --- | --- | --- |
-| Water quality classification | sensor | EU classification (e.g. *Utmärkt kvalitet*); attrs include 4-year history. |
-| Latest sample assessment | sensor | Verdict of the most recent sample (e.g. *Tjänligt* = safe); `suitable` attribute. |
+| **Bathing status** | sensor | **Headline "can I swim?"** — combines the live advisory with the latest sample into one verdict (*OK to bathe* / *Caution* / *Not suitable* / *Advisory*). |
+| Water quality classification | sensor | EU classification (e.g. *Excellent*); attrs include 4-year history + EU-bathing flag. |
+| Latest sample assessment | sensor | Verdict of the most recent sample (*Suitable* …); attrs carry the sample's E. coli/enterococci/temp + recent history. |
 | Water temperature (measured) | sensor | °C, from the latest physical sample. |
 | Water temperature (forecast) | sensor | °C, Copernicus forecast. **Coastal sites only** (see caveats). |
 | Air temperature | sensor | °C at the bath from SMHI SNOW (or Open-Meteo); `apparent_temperature`/`provider` attributes. |

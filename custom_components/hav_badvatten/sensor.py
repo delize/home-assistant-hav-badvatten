@@ -182,7 +182,59 @@ SAMPLE_ASSESS_BY_ID = {1: "suitable", 2: "suitable_with_remarks", 3: "unsuitable
 SAMPLE_ASSESS_OPTIONS = list(SAMPLE_ASSESS_BY_ID.values())
 
 
+def _results_sorted(data: dict) -> list[dict]:
+    """All monitoring samples, newest first."""
+    return sorted(
+        data.get("results") or [],
+        key=lambda r: r.get("takenAt") or "",
+        reverse=True,
+    )
+
+
+def _advisories(data: dict) -> list[dict]:
+    return data.get("adviceAgainstBathing") or []
+
+
+# Headline swim status: a live advisory overrides the latest sample, and
+# sampleAssessId 2 ("suitable with remarks") becomes "caution".
+STATUS_BY_ASSESS_ID = {1: "suitable", 2: "caution", 3: "unsuitable"}
+BATHING_STATUS_OPTIONS = ["suitable", "caution", "unsuitable", "advisory"]
+
+
+def _bathing_status(data: dict) -> str | None:
+    if _advisories(data):
+        return "advisory"
+    return STATUS_BY_ASSESS_ID.get(_latest_result(data).get("sampleAssessId"))
+
+
+def _sample_history(data: dict, value_key: str, extra: dict[str, str]) -> list[dict]:
+    """Recent samples as {date, value, <extra>...} — exposes the trend even
+    though HA's own graph is flat (the state only changes when a new sample lands)."""
+    out = []
+    for r in _results_sorted(data)[:8]:
+        item = {"date": r.get("takenAt"), "value": r.get(value_key)}
+        item.update({name: r.get(src) for name, src in extra.items()})
+        out.append(item)
+    return out
+
+
 SENSORS: tuple[BadvattenSensorDescription, ...] = (
+    # Headline indicator: the single "can I swim?" answer.
+    BadvattenSensorDescription(
+        key="bathing_status",
+        device_class=SensorDeviceClass.ENUM,
+        options=BATHING_STATUS_OPTIONS,
+        icon="mdi:swim",
+        value_fn=_bathing_status,
+        attr_fn=lambda d: {
+            "based_on": "advisory" if _advisories(d) else "latest_sample",
+            "advisory": (
+                _advisories(d)[0].get("description") if _advisories(d) else None
+            ),
+            "sample_assessment": _latest_result(d).get("sampleAssessIdText"),
+            "sampled_at": _latest_result(d).get("takenAt"),
+        },
+    ),
     BadvattenSensorDescription(
         key="classification",
         device_class=SensorDeviceClass.ENUM,
@@ -195,6 +247,8 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
             "year": _latest_classification(d).get("year"),
             "quality_class_id": _latest_classification(d).get("qualityClassId"),
             "rating_text": _latest_classification(d).get("qualityClassIdText"),
+            "eu_bathing_water": (d.get("bathingWater") or {}).get("euType"),
+            "water_type": (d.get("bathingWater") or {}).get("waterTypeIdText"),
             "history": [
                 {
                     "year": c.get("year"),
@@ -228,6 +282,15 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
             "sampled_at": _latest_result(d).get("takenAt"),
             "weather": _latest_result(d).get("weatherIdText"),
             "complete": _latest_result(d).get("sampleComplete"),
+            "e_coli": _latest_result(d).get("escherichiaColiCount"),
+            "intestinal_enterococci": _latest_result(d).get(
+                "intestinalEnterococciCount"
+            ),
+            "water_temp": _to_float(_latest_result(d).get("waterTemp")),
+            "history": [
+                {"date": r.get("takenAt"), "assessment": r.get("sampleAssessIdText")}
+                for r in _results_sorted(d)[:8]
+            ],
         },
     ),
     BadvattenSensorDescription(
@@ -236,7 +299,13 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: _to_float(_latest_result(d).get("waterTemp")),
-        attr_fn=lambda d: {"sampled_at": _latest_result(d).get("takenAt")},
+        attr_fn=lambda d: {
+            "sampled_at": _latest_result(d).get("takenAt"),
+            "history": [
+                {"date": r.get("takenAt"), "value": _to_float(r.get("waterTemp"))}
+                for r in _results_sorted(d)[:8]
+            ],
+        },
     ),
     BadvattenSensorDescription(
         key="water_temp_forecast",
@@ -298,6 +367,14 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
             "assessment": _latest_result(d).get("escherichiaColiAssessIdText"),
             "assessment_id": _latest_result(d).get("escherichiaColiAssessId"),
             "sampled_at": _latest_result(d).get("takenAt"),
+            "history": _sample_history(
+                d,
+                "escherichiaColiCount",
+                {
+                    "prefix": "escherichiaColiPrefix",
+                    "assessment": "escherichiaColiAssessIdText",
+                },
+            ),
         },
     ),
     BadvattenSensorDescription(
@@ -311,6 +388,14 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
             "assessment": _latest_result(d).get("intestinalEnterococciAssessIdText"),
             "assessment_id": _latest_result(d).get("intestinalEnterococciAssessId"),
             "sampled_at": _latest_result(d).get("takenAt"),
+            "history": _sample_history(
+                d,
+                "intestinalEnterococciCount",
+                {
+                    "prefix": "intestinalEnterococciPrefix",
+                    "assessment": "intestinalEnterococciAssessIdText",
+                },
+            ),
         },
     ),
     BadvattenSensorDescription(

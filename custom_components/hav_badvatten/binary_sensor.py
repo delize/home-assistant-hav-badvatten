@@ -22,6 +22,11 @@ def _advisories(data: dict) -> list[dict]:
     return data.get("adviceAgainstBathing") or []
 
 
+def _latest_advisory(data: dict) -> dict:
+    advisories = _advisories(data)
+    return advisories[0] if advisories else {}
+
+
 @dataclass(frozen=True, kw_only=True)
 class BadvattenBinaryDescription(BinarySensorEntityDescription):
     """Binary sensor description plus value/attribute extractors."""
@@ -39,6 +44,8 @@ BINARY_SENSORS: tuple[BadvattenBinaryDescription, ...] = (
         value_fn=lambda d: bool(_advisories(d)),
         attr_fn=lambda d: {
             "count": len(_advisories(d)),
+            "latest": _latest_advisory(d).get("description"),
+            "latest_type": _latest_advisory(d).get("typeIdText"),
             "advisories": [
                 {
                     "type": a.get("typeIdText"),

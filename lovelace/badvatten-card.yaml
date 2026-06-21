@@ -19,6 +19,18 @@ card_mod:
       margin-bottom: -10px !important;
     }
 entities:
+  # --- Headline: the single "can I swim?" verdict ---------------------------
+  - type: custom:template-entity-row
+    entity: sensor.sjovikskajens_bryggbad_bathing_status
+    icon: mdi:swim
+    name: Badstatus
+    color: >
+      {% set s = states('sensor.sjovikskajens_bryggbad_bathing_status') %}
+      {% if s == 'suitable' %} #4CAF50
+      {% elif s == 'caution' %} orange
+      {% elif s in ['unsuitable', 'advisory'] %} red
+      {% else %} grey {% endif %}
+
   # --- Live advisory: the "should I swim today" safety signal ---------------
   - type: custom:template-entity-row
     entity: binary_sensor.sjovikskajens_bryggbad_advice_against_bathing

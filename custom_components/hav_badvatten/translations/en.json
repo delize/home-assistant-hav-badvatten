@@ -37,6 +37,15 @@
   },
   "entity": {
     "sensor": {
+      "bathing_status": {
+        "name": "Bathing status",
+        "state": {
+          "suitable": "OK to bathe",
+          "caution": "Bathe with caution",
+          "unsuitable": "Not suitable for bathing",
+          "advisory": "Advisory — avoid bathing"
+        }
+      },
       "classification": {
         "name": "Water quality classification",
         "state": {
