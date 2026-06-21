@@ -73,7 +73,7 @@
     },
     "binary_sensor": {
       "advice_against_bathing": { "name": "Advice against bathing" },
-      "bloom_risk": { "name": "Prone to algal blooms" }
+      "bloom_risk": { "name": "Susceptible to algal blooms" }
     }
   }
 }

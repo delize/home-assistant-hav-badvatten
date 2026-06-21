@@ -138,7 +138,7 @@ Each bathing site is one device with these entities:
 | Bathing season | sensor | `open` / `closed`; attrs are season start/end. |
 | Baltic cyanobacteria (past week) | sensor | **Coastal baths only.** SMHI satellite bloom compilation; diagnostic. State is the map date; attrs hold the EN/SV summary and `map_url`. |
 | Advice against bathing | binary_sensor | **Live** safety signal — on when an advisory (e.g. algal bloom, swimming ban) is active. |
-| Prone to algal blooms | binary_sensor | **Static** diagnostic flag — this site is historically *prone* to algal/cyanobacteria blooms (awareness, not a live alert). |
+| Susceptible to algal blooms | binary_sensor | **Static** diagnostic flag — this site is historically *susceptible* to algal/cyanobacteria blooms (awareness, not a live alert). |
 
 ## Caveats
 
@@ -150,7 +150,7 @@ Each bathing site is one device with these entities:
   be off. The sensor's `source` attribute reports `hav-copernicus` or
   `open-meteo`, and the attribution updates accordingly. The *Water temperature
   (measured)* sensor (from physical samples) is the most reliable inland signal.
-- **`Advice against bathing` is the live signal; `Prone to algal blooms` is not.**
+- **`Advice against bathing` is the live signal; `Susceptible to algal blooms` is not.**
   The latter is a static profile flag ("this site tends to bloom" — awareness),
   while *Advice against bathing* reflects an actual current advisory.
 - **Nearest-first search needs a real home location.** Home Assistant defaults
