@@ -51,6 +51,11 @@ def test_fetch_weather_open_meteo_normalized():
     assert w["wind_direction"] == 280
 
 
+def test_fetch_water_temp_marine():
+    api = BadvattenApi(FakeSession([("marine-api", load_fixture("marine.json"))]))
+    assert _run(api.fetch_water_temp(59.3073, 18.0334)) == 20.2
+
+
 def test_fetch_weather_smhi_normalized():
     from hav_badvatten.const import PROVIDER_SMHI
 

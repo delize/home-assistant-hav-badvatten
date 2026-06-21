@@ -68,6 +68,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 _LOGGER.debug("weather fetch failed for %s: %s", bath_id, err)
         payload["weather"] = weather
 
+        # Water-temp forecast fallback: HaV (Copernicus) is sea-only, so inland
+        # baths have an empty waterTemperature. Fill it from Open-Meteo's
+        # sea-surface temperature (best-effort; approximate for remote lakes).
+        water_temp_fallback: float | None = None
+        has_hav_forecast = bool((payload.get("bath") or {}).get("waterTemperature"))
+        if not has_hav_forecast and lat is not None and lon is not None:
+            try:
+                water_temp_fallback = await api.fetch_water_temp(lat, lon)
+            except Exception as err:  # noqa: BLE001 - fallback is optional
+                _LOGGER.debug("water-temp fallback failed for %s: %s", bath_id, err)
+        payload["water_temp_fallback"] = water_temp_fallback
+
         # SMHI Baltic cyanobacteria map (regional) — only relevant for coastal
         # baths. Best-effort, same as weather.
         algae: dict | None = None

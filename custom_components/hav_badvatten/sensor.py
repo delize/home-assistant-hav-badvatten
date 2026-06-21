@@ -20,6 +20,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import (
     ALGAE_ATTRIBUTION,
+    ATTRIBUTION,
     CONF_WEATHER_PROVIDER,
     DEFAULT_WEATHER_PROVIDER,
     DOMAIN,
@@ -123,6 +124,23 @@ def _ms_to_iso(value: Any) -> str | None:
         return None
 
 
+def _water_temp_source(data: dict) -> str | None:
+    """Which source the water-temp forecast value comes from."""
+    if _forecast_entry_now(data) is not None:
+        return "hav-copernicus"
+    if data.get("water_temp_fallback") is not None:
+        return "open-meteo"
+    return None
+
+
+def _water_temp_forecast(data: dict) -> float | None:
+    """HaV Copernicus forecast if present, else the Open-Meteo SST fallback."""
+    entry = _forecast_entry_now(data)
+    if entry is not None:
+        return _to_float(entry.get("waterTemp"))
+    return _to_float(data.get("water_temp_fallback"))
+
+
 def _season_state(data: dict) -> str | None:
     profile = data.get("profile") or {}
     season = profile.get("bathingSeason") or {}
@@ -141,6 +159,9 @@ class BadvattenSensorDescription(SensorEntityDescription):
     attr_fn: Callable[[dict], dict[str, Any]] | None = None
     # Override the device attribution (weather sensors credit Open-Meteo).
     attribution: str | None = None
+    # Per-state attribution when the source varies at runtime (water-temp forecast
+    # is HaV for coastal baths, Open-Meteo for the inland fallback).
+    attribution_fn: Callable[[dict], str | None] | None = None
 
 
 # API numeric ids -> stable enum keys so Home Assistant can translate the state
@@ -222,8 +243,14 @@ SENSORS: tuple[BadvattenSensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda d: _to_float((_forecast_entry_now(d) or {}).get("waterTemp")),
+        value_fn=_water_temp_forecast,
+        attribution_fn=lambda d: (
+            WEATHER_ATTRIBUTION
+            if _water_temp_source(d) == "open-meteo"
+            else ATTRIBUTION
+        ),
         attr_fn=lambda d: {
+            "source": _water_temp_source(d),
             "hour": (_forecast_entry_now(d) or {}).get("measHour"),
             "forecast": [
                 {"hour": e.get("measHour"), "water_temp": _to_float(e.get("waterTemp"))}
@@ -375,6 +402,12 @@ class BadvattenSensor(BadvattenEntity, SensorEntity):
     @property
     def native_value(self) -> StateType | datetime:
         return self.entity_description.value_fn(self._data)
+
+    @property
+    def attribution(self) -> str | None:
+        if self.entity_description.attribution_fn is not None:
+            return self.entity_description.attribution_fn(self._data)
+        return self._attr_attribution
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:

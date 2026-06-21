@@ -10,6 +10,7 @@ from .const import (
     ALGAE_LATEST_DAY_URL,
     BATH_URL,
     LIST_URL,
+    OPEN_METEO_MARINE_URL,
     OPEN_METEO_URL,
     PROVIDER_SMHI,
     SMHI_FORECAST_URL,
@@ -91,6 +92,16 @@ class BadvattenApi:
             return _normalize_smhi(data)
         data = await self._get_json(OPEN_METEO_URL.format(lat=lat, lon=lon))
         return _normalize_open_meteo(data.get("current") or {})
+
+    async def fetch_water_temp(self, lat: float, lon: float) -> float | None:
+        """Open-Meteo sea-surface temperature — fallback when HaV has no forecast.
+
+        Accurate near the coast; for an inland lake it snaps to the nearest sea
+        cell and may be off. Best-effort.
+        """
+        data = await self._get_json(OPEN_METEO_MARINE_URL.format(lat=lat, lon=lon))
+        value = (data.get("current") or {}).get("sea_surface_temperature")
+        return _to_float(value)
 
     async def fetch_algae(self) -> dict[str, Any]:
         """Latest Baltic cyanobacteria compilation (SMHI Algae Maps).

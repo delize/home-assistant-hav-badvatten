@@ -59,8 +59,28 @@ def test_inland_weather_from_open_meteo(inland):
 def test_coastal_forecast_picks_nearest_hour(coastal):
     s = _by_key(coastal)
     # forecast hours 10/13/16, fixed now=14:00 -> 13:00 -> 12.8 °C
-    assert s["water_temp_forecast"].native_value == 12.8
+    forecast = s["water_temp_forecast"]
+    assert forecast.native_value == 12.8
+    assert forecast.extra_state_attributes["source"] == "hav-copernicus"
+    assert forecast.attribution == ATTRIBUTION  # HaV, not Open-Meteo
     assert s["classification"].native_value == "excellent"
+
+
+def test_inland_water_temp_falls_back_to_open_meteo():
+    from conftest import FakeCoordinator, load_fixture
+
+    coord = FakeCoordinator("SE0110180000007461", load_fixture("bath_inland.json"))
+    coord.data["water_temp_fallback"] = 20.2  # Open-Meteo SST (no HaV forecast)
+    forecast = _by_key(coord)["water_temp_forecast"]
+    assert forecast.native_value == 20.2
+    assert forecast.extra_state_attributes["source"] == "open-meteo"
+    assert forecast.attribution == WEATHER_ATTRIBUTION  # credits Open-Meteo
+
+
+def test_inland_water_temp_unknown_without_fallback(inland):
+    forecast = _by_key(inland)["water_temp_forecast"]
+    assert forecast.native_value is None
+    assert forecast.extra_state_attributes["source"] is None
 
 
 def test_weather_sensors_credit_open_meteo(inland):

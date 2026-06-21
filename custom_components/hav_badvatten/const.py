@@ -76,6 +76,16 @@ OPEN_METEO_URL = (
 )
 WEATHER_ATTRIBUTION = "Väder: Open-Meteo (CC BY 4.0)"
 
+# Water-temperature forecast fallback. The HaV (Copernicus) forecast is sea-only,
+# so inland baths have no forecast. When it's empty we fall back to Open-Meteo's
+# sea-surface temperature at the bath's coordinates — accurate for coastal /
+# Baltic-adjacent sites, but for a lake far from the sea it snaps to the nearest
+# sea cell and may be off. The sensor records which source produced the value.
+OPEN_METEO_MARINE_URL = (
+    "https://marine-api.open-meteo.com/v1/marine"
+    "?latitude={lat}&longitude={lon}&current=sea_surface_temperature"
+)
+
 # --- SMHI Algae Maps (Baltic cyanobacteria) ----------------------------------
 # Satellite-derived cyanobacteria-bloom maps + bilingual weekly text summaries
 # for the Baltic, updated daily June–September. Regional (the Baltic), not

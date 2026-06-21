@@ -48,6 +48,7 @@ class BadvattenEntity(CoordinatorEntity[DataUpdateCoordinator]):
             **bath,
             "weather": payload.get("weather"),
             "algae": payload.get("algae"),
+            "water_temp_fallback": payload.get("water_temp_fallback"),
         }
 
     @property

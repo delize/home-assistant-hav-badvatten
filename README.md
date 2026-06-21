@@ -142,11 +142,14 @@ Each bathing site is one device with these entities:
 
 ## Caveats
 
-- **Water-temp forecast is absent on inland baths.** The Copernicus forecast
+- **Inland water-temp forecast is an approximation.** HaV's Copernicus forecast
   (`waterTemperature`) only covers coastal ("Hav") sites. On lakes ("Sjö") the
-  *Water temperature (forecast)* sensor stays *unknown*. The *Water temperature
-  (measured)* sensor (from physical samples) still works for inland baths in
-  season.
+  *Water temperature (forecast)* sensor falls back to **Open-Meteo's sea-surface
+  temperature** at the bath's coordinates — accurate for coastal/Baltic-adjacent
+  sites, but for a lake far from the sea it snaps to the nearest sea cell and may
+  be off. The sensor's `source` attribute reports `hav-copernicus` or
+  `open-meteo`, and the attribution updates accordingly. The *Water temperature
+  (measured)* sensor (from physical samples) is the most reliable inland signal.
 - **`Advice against bathing` is the live signal; `bloom risk` is not.** The
   bloom-risk binary sensor is a static profile flag ("this site can bloom"),
   while *Advice against bathing* reflects an actual current advisory.
