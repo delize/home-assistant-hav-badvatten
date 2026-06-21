@@ -21,7 +21,7 @@ jobs:
     name: Publish release zip
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set manifest version to the release tag
         run: |
