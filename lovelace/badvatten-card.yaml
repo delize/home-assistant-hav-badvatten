@@ -129,8 +129,10 @@ entities:
          or states('sensor.sjovikskajens_bryggbad_baltic_cyanobacteria') }}
 
   # --- Diagnostic: static bloom-proneness ----------------------------------
-  - entity: binary_sensor.sjovikskajens_bryggbad_algal_cyanobacteria_bloom_risk
-    name: Risk för algblomning (statisk)
+  # (entity_id follows the entity name; existing installs created before v0.4.4
+  #  keep the old `..._algal_cyanobacteria_bloom_risk` id — adjust if needed.)
+  - entity: binary_sensor.sjovikskajens_bryggbad_prone_to_algal_blooms
+    name: Benägen för algblomning
     icon: mdi:flower-pollen
 view_layout:
   position: sidebar
